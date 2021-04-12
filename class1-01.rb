@@ -1,14 +1,38 @@
 # 構造体の作成 (paizaランク C 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__make
 
-def solve(input_data)
-  x, d, k = input_data.split.map(&:to_i)
-
-  dp = [x]
-  (k - 1).times do
-    dp << dp[-1] + d
+class User
+  def initialize(nickname:, old:, birth:, state:)
+    @nickname = nickname
+    @old = old
+    @birth = birth
+    @state = state
   end
-  dp[-1]
+
+  def info
+    <<~"EOS"
+      User{
+      nickname : #{@nickname}
+      old : #{@old}
+      birth : #{@birth}
+      state : #{@state}
+      }
+    EOS
+  end
+end
+
+def solve(input_data)
+  n, *users = input_data.split("\n")
+
+  users.map do |user|
+    nickname, old, birth, state = user.split
+    old = old.to_i
+    user = User.new(nickname: nickname,
+                    old: old,
+                    birth: birth,
+                    state: state)
+    user.info
+  end
 end
 
 #puts solve(STDIN.read)
@@ -25,4 +49,31 @@ res1 = <<~"EOS"
   state : tokyo
   }
 EOS
-puts solve(in1)
+
+in2 = <<~"EOS"
+  3
+  mako 13 08/08 nara
+  megumi 14 11/02 saitama
+  taisei 16 12/04 nagano
+EOS
+res2 = <<~"EOS"
+  User{
+  nickname : mako
+  old : 13
+  birth : 08/08
+  state : nara
+  }
+  User{
+  nickname : megumi
+  old : 14
+  birth : 11/02
+  state : saitama
+  }
+  User{
+  nickname : taisei
+  old : 16
+  birth : 12/04
+  state : nagano
+  }
+EOS
+puts solve(in2)
