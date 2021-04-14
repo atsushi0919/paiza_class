@@ -1,55 +1,62 @@
 # クラスの継承 (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__inheritance
 
-class Employee
-  def initialize(number:, name:)
-    @number = number
-    @name = name
+class Customer
+  attr_reader :payment
+
+  def initialize(age:)
+    @age = age
+    @menu_item = ["food", "softdrink"]
+    @payment = 0
   end
 
-  def getnum
-    @number
+  def order(item, price)
+    if @menu_item.include?(item)
+      @payment += price
+    end
+  end
+end
+
+class AdultCustomer < Customer
+  DISCOUNT = 200
+
+  def initialize(age:)
+    super
+    @menu_item << "alcohol"
+    @discount = false
   end
 
-  def getname
-    @name
-  end
-
-  def change_num(number)
-    @number = number
-  end
-
-  def change_name(name)
-    @name = name
+  def order(item, price)
+    if !@discount && item == "alcohol"
+      @discount = true
+    end
+    if @discount && item == "food"
+      price -= DISCOUNT
+    end
+    super
   end
 end
 
 def solve(input_data)
-  n, *operations = input_data.split("\n")
+  input_data = input_data.split("\n")
+  n, k = input_data.shift.split.map(&:to_i)
+  customer_list = input_data.shift(n).map(&:to_i)
+  order_list = input_data.map(&:split)
 
-  directory = []
-  result = []
-  operations.each do |operation|
-    method, *params = operation.split
-
-    case method
-    when "make"
-      number, name = params
-      number = number.to_i
-      directory << Employee.new(number: number,
-                                name: name)
-    when "change_num"
-      index, new_number = params.map(&:to_i)
-      directory[index - 1].change_num(new_number)
-    when "change_name"
-      index, new_name = params
-      directory[index.to_i - 1].change_name(new_name)
-    when "getnum", "getname"
-      number = params[0].to_i - 1
-      result << directory[number].public_send(method)
-    end
+  customer_list.each_with_index do |age, idx|
+    customer_list[idx] = if age < 20
+        Customer.new(age: age)
+      else
+        AdultCustomer.new(age: age)
+      end
   end
-  result
+  order_list.each do |order|
+    idx = order[0].to_i - 1
+    item = order[1]
+    price = order[2].to_i
+    customer_list[idx].order(item, price)
+  end
+  customer_list.map { |customer| customer.payment }
 end
 
 #puts solve(STDIN.read)
@@ -95,7 +102,7 @@ res2 = <<~"EOS"
   4631
   2181
 EOS
-puts solve(in1)
+puts solve(in2)
 
 =begin
 paiza 国の大衆居酒屋で働きながらクラスの勉強をしていたあなたは、
