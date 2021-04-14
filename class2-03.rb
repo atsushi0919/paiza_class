@@ -31,16 +31,23 @@ def solve(input_data)
   result = []
   operations.each do |operation|
     method, *params = operation.split
-    params[0] = params[0].to_i
 
-    if method == "make"
+    case method
+    when "make"
       number, name = params
+      number = number.to_i
       directory << Employee.new(number: number,
                                 name: name)
-      next
+    when "change_num"
+      index, new_number = params.map(&:to_i)
+      directory[index - 1].change_num(new_number)
+    when "change_name"
+      index, new_name = params
+      directory[index.to_i - 1].change_name(new_name)
+    when "getnum", "getname"
+      number = params[0].to_i - 1
+      result << directory[number].public_send(method)
     end
-    number = params[0].to_i - 1
-    #result << unless directory[number].public_send(method)
   end
   result
 end
