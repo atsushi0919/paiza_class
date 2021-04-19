@@ -10,6 +10,21 @@ class Point
   end
 end
 
+class Maze
+  attr_reader :point_list
+
+  def initialize(point_list:)
+    @point_list = point_list
+  end
+end
+
+class Player
+  def initialize(start_point:)
+    @current_point = start_point
+    @magic_spell = start_point.alphabet
+  end
+end
+
 def solve(input_data)
   input_data = input_data.split("\n")
   n, k, s = input_data.shift.split.map(&:to_i)
@@ -20,13 +35,20 @@ def solve(input_data)
     Point.new(alphabet: alphabet, route: route)
   end
 
-  idx = s - 1
-  result = [point_list[idx].alphabet]
-  input_data.map { |select| select.to_i - 1 }.each do |select|
-    idx = point_list[idx].route[select] - 1
-    result << point_list[idx].alphabet
-  end
-  result.join
+  maze = Maze.new(point_list: point_list)
+  player = Player.new(start_point: maze.point_list[s - 1])
+
+  p maze
+  p player
+  exit
+
+  # idx = s - 1
+  # result = [point_list[idx].alphabet]
+  # input_data.map { |select| select.to_i - 1 }.each do |select|
+  #   idx = point_list[idx].route[select] - 1
+  #   result << point_list[idx].alphabet
+  # end
+  # result.join
 end
 
 #puts solve(STDIN.read)
@@ -63,4 +85,4 @@ in2 = <<~"EOS"
   1
 EOS
 res2 = "kfkfkkkkkfo"
-puts solve(in2)
+puts solve(in1)
