@@ -1,6 +1,24 @@
 # 出口のない迷路 (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__closed_maze
 
+class Player
+  attr_reader :current_point, :magic_spell
+
+  def initialize(start_point:)
+    @current_point = start_point
+    @magic_spell = start_point.alphabet
+  end
+
+  def next_index(direction)
+    @current_point.route[direction]
+  end
+
+  def move_forward(next_point)
+    @current_point = next_point
+    @magic_spell += @current_point.alphabet
+  end
+end
+
 class Point
   attr_reader :alphabet, :route
 
@@ -11,17 +29,16 @@ class Point
 end
 
 class Maze
-  attr_reader :point_list
+  attr_reader :point_list, :player
 
-  def initialize(point_list:)
+  def initialize(point_list:, player:)
     @point_list = point_list
+    @player = player
   end
-end
 
-class Player
-  def initialize(start_point:)
-    @current_point = start_point
-    @magic_spell = start_point.alphabet
+  def forward_player(direction)
+    next_point = @point_list[@player.next_index(direction) - 1]
+    @player.move_forward(next_point)
   end
 end
 
@@ -35,20 +52,14 @@ def solve(input_data)
     Point.new(alphabet: alphabet, route: route)
   end
 
-  maze = Maze.new(point_list: point_list)
-  player = Player.new(start_point: maze.point_list[s - 1])
+  player = Player.new(start_point: point_list[s - 1])
+  maze = Maze.new(point_list: point_list, player: player)
 
-  p maze
-  p player
-  exit
-
-  # idx = s - 1
-  # result = [point_list[idx].alphabet]
-  # input_data.map { |select| select.to_i - 1 }.each do |select|
-  #   idx = point_list[idx].route[select] - 1
-  #   result << point_list[idx].alphabet
-  # end
-  # result.join
+  input_data.each do |direction|
+    direction = direction.to_i - 1
+    maze.forward_player(direction)
+  end
+  maze.player.magic_spell
 end
 
 #puts solve(STDIN.read)
