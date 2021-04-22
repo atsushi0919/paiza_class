@@ -1,78 +1,47 @@
 # ロボットの暴走 (paizaランク A 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__robot_move
 
-class Supercar
-  attr_reader :mileage
+class Robot
+  VX = ["N": 0, "S": 0, "E": 1, "W": -1]
+  VY = ["N": -1, "S": 1, "E": 0, "W": 0]
+  MOBILITY = [1, 2, 5, 10]
 
-  def initialize(fuel, gas_mileage)
-    @fuel = fuel
-    @gas_mileage = gas_mileage
-    @mileage = 0
-  end
-
-  def run
-    return if @fuel == 0
-    @fuel -= 1
-    @mileage += @gas_mileage
+  def initialize(x, y, lv)
+    @x = x
+    @y = y
+    @lv = lv
   end
 end
 
-class Supersupercar < Supercar
-  def fly
-    if @fuel < 5
-      run
-      return
-    end
-    @fuel -= 5
-    @mileage += @gas_mileage ** 2
-  end
-end
+class Factory
+  attr_writer :toolbox_list, :robot_list
 
-class Supersupersupercar < Supersupercar
-  def fly
-    if @fuel < 5
-      run
-      return
-    end
-    @fuel -= 5
-    @mileage += 2 * @gas_mileage ** 2
-  end
-
-  def teleport
-    if @fuel < @gas_mileage ** 2
-      fly
-      return
-    end
-    @fuel -= @gas_mileage ** 2
-    @mileage += @gas_mileage ** 4
+  def initialize(h, w, toolbox_list, robot_list)
+    @h = h
+    @w = w
+    @toolbox_list = toolbox_list
+    @robot_list = robot_list
   end
 end
 
 def solve(input_data)
   input_data = input_data.split("\n")
-  n, k = input_data.shift.split.map(&:to_i)
+  h, w, n, k = input_data.shift.split.map(&:to_i)
 
-  car_list = input_data.shift(n).map do |car_params|
-    car_type, *params = car_params.split
-    params.map!(&:to_i)
-    case car_type
-    when "supercar"
-      Supercar.new(*params)
-    when "supersupercar"
-      Supersupercar.new(*params)
-    when "supersupersupercar"
-      Supersupersupercar.new(*params)
-    end
+  toolbox_list = input_data.shift(TOOLBOX).map do |coordinate|
+    coordinate.split.map(&:to_i)
   end
 
-  input_data.each do |drive_params|
-    car_idx, method = drive_params.split
-    car_idx = car_idx.to_i - 1
-    car_list[car_idx].public_send(method)
+  robot_list = input_data.shift(n).map do |robot_params|
+    x, y, lv = robot_params.split.map(&:to_i)
+    Robot.new(x, y, lv)
   end
-  car_list.map { |car| car.mileage }
+
+  factory = Factory.new(h, w, toolbox_list, robot_list)
+  p factory
 end
 
+TOOLBOX = 10
 #puts solve(STDIN.read)
 
 in1 = <<~"EOS"
