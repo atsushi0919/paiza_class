@@ -31,10 +31,9 @@ class FightingGame
     return if figting_order.nil?
 
     player1, player2 = figting_order
-    # どちらも強化技
+    # 強化技使用
     if player1[:skill][:speed] == 0 && player2[:skill][:speed] == 0
       return
-      # 片方が強化技
     elsif player1[:skill][:speed] == 0
       player1, player2 = player2, player1
     end
