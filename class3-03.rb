@@ -26,11 +26,11 @@ class FightingGame
     @player_list = player_list
   end
 
-  def figting(figting_params)
-    figting_order = judge_skill_speed(figting_params)
-    return if figting_order.nil?
+  def fighting(fighting_params)
+    fighting_order = judge_skill_speed(fighting_params)
+    return if fighting_order.nil?
 
-    player1, player2 = figting_order
+    player1, player2 = fighting_order
     # 強化技使用
     if player1[:skill][:speed] == 0 && player2[:skill][:speed] == 0
       return
@@ -44,8 +44,8 @@ class FightingGame
 
   private
 
-  def judge_skill_speed(figting_params)
-    order = figting_params.each_slice(2).map do |p_idx, s_idx|
+  def judge_skill_speed(fighting_params)
+    order = fighting_params.each_slice(2).map do |p_idx, s_idx|
       player = @player_list[p_idx]
       skill = player.skills[s_idx]
       if player.hp == 0
@@ -55,7 +55,7 @@ class FightingGame
       end
       { player: player, skill: skill }
     end
-    order.sort_by! { |figting_info| figting_info[:skill][:speed] }
+    order.sort_by! { |fighting_info| fighting_info[:skill][:speed] }
   end
 end
 
@@ -72,11 +72,11 @@ def solve(input_data)
   end
 
   game = FightingGame.new(player_list)
-  input_data.each do |figting_params|
-    figting_params = figting_params.split.map do |param|
+  input_data.each do |fighting_params|
+    fighting_params = fighting_params.split.map do |param|
       param = param.to_i - 1
     end
-    game.figting(figting_params)
+    game.fighting(fighting_params)
   end
   game.player_list.count { |player| player.hp > 0 }
 end
@@ -117,4 +117,4 @@ in2 = <<~"EOS"
 EOS
 res2 = 3
 
-puts solve(in2)
+puts solve(in1)
