@@ -1,8 +1,48 @@
 # 構造体の作成 (paizaランク C 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__make
 
+INPUT1 = <<~"EOS"
+  1
+  koko 23 04/10 tokyo
+EOS
+OUTPUT1 = <<~"EOS"
+  User{
+  nickname : koko
+  old : 23
+  birth : 04/10
+  state : tokyo
+  }
+EOS
+
+INPUT2 = <<~"EOS"
+  3
+  mako 13 08/08 nara
+  megumi 14 11/02 saitama
+  taisei 16 12/04 nagano
+EOS
+OUTPUT2 = <<~"EOS"
+  User{
+  nickname : mako
+  old : 13
+  birth : 08/08
+  state : nara
+  }
+  User{
+  nickname : megumi
+  old : 14
+  birth : 11/02
+  state : saitama
+  }
+  User{
+  nickname : taisei
+  old : 16
+  birth : 12/04
+  state : nagano
+  }
+EOS
+
 class User
-  def initialize(nickname:, old:, birth:, state:)
+  def initialize(nickname, old, birth, state)
     @nickname = nickname
     @old = old
     @birth = birth
@@ -27,53 +67,9 @@ def solve(input_data)
   users.map do |user|
     nickname, old, birth, state = user.split
     old = old.to_i
-    user = User.new(nickname: nickname,
-                    old: old,
-                    birth: birth,
-                    state: state)
+    user = User.new(nickname, old, birth, state)
     user.info
   end
 end
 
-#puts solve(STDIN.read)
-
-in1 = <<~"EOS"
-  1
-  koko 23 04/10 tokyo
-EOS
-res1 = <<~"EOS"
-  User{
-  nickname : koko
-  old : 23
-  birth : 04/10
-  state : tokyo
-  }
-EOS
-
-in2 = <<~"EOS"
-  3
-  mako 13 08/08 nara
-  megumi 14 11/02 saitama
-  taisei 16 12/04 nagano
-EOS
-res2 = <<~"EOS"
-  User{
-  nickname : mako
-  old : 13
-  birth : 08/08
-  state : nara
-  }
-  User{
-  nickname : megumi
-  old : 14
-  birth : 11/02
-  state : saitama
-  }
-  User{
-  nickname : taisei
-  old : 16
-  birth : 12/04
-  state : nagano
-  }
-EOS
-puts solve(in2)
+puts solve(INPUT2)
