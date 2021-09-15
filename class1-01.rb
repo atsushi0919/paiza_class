@@ -41,6 +41,7 @@ OUTPUT2 = <<~"EOS"
   }
 EOS
 
+# [解答例]
 class User
   def initialize(nickname, old, birth, state)
     @nickname = nickname
@@ -65,12 +66,16 @@ def solve(input_data)
   # 入力データ受け取り
   _, *users = input_data.split("\n")
 
-  # 配列users を先頭から順にインスタンス化した配列で上書きする
+  # users の先頭から順にインスタンス化した配列で上書きする
   users.map! do |user|
     nickname, old, birth, state = user.split
     user = User.new(nickname, old.to_i, birth, state)
-    user.info
   end
+
+  # users の先頭から順に infoメソッドを呼び出した結果を result に格納
+  result = users.map { |user| user.info }
+
+  # 処理結果を連結した文字列を返す
   result.join
 end
 
@@ -78,9 +83,35 @@ puts solve(STDIN.read)
 
 # [参考 動作確認用コード]
 # pp solve(INPUT1)
+# > "User{\n" +
+# > "nickname : koko\n" +
+# > "old : 23\n" +
+# > "birth : 04/10\n" +
+# > "state : tokyo\n" +
+# > "}\n"
 # p solve(INPUT1) == OUTPUT1
+# > true
 # pp solve(INPUT2)
+# > "User{\n" +
+# > "nickname : mako\n" +
+# > "old : 13\n" +
+# > "birth : 08/08\n" +
+# > "state : nara\n" +
+# > "}\n" +
+# > "User{\n" +
+# > "nickname : megumi\n" +
+# > "old : 14\n" +
+# > "birth : 11/02\n" +
+# > "state : saitama\n" +
+# > "}\n" +
+# > "User{\n" +
+# > "nickname : taisei\n" +
+# > "old : 16\n" +
+# > "birth : 12/04\n" +
+# > "state : nagano\n" +
+# > "}\n"
 # p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 下記の問題をプログラミングしてみよう！
