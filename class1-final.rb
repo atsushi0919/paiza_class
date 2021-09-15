@@ -25,11 +25,10 @@ OUTPUT2 = <<~"EOS"
 EOS
 
 class Student
-  attr_reader :id, :old
+  attr_reader :old
   attr_writer :name
 
-  def initialize(id, name, old, birth, state)
-    @id = id
+  def initialize(name, old, birth, state)
     @name = name
     @old = old
     @birth = birth
@@ -53,17 +52,15 @@ def solve(input_lines)
   *requests = input_lines.shift(k)
 
   # students をインスタンスの配列に置き換える
-  students.map!.with_index(1) do |student, id|
+  students.map! do |student|
     name, old, birth, state = student.split
-    Student.new(id, name, old.to_i, birth, state)
+    Student.new(name, old.to_i, birth, state)
   end
 
   # 改名の要求があればchangeNameを呼び出す
   requests.each do |request|
     id, new_name = request.split
-    students.find { |student|
-      student.id == id.to_i
-    }.changeName(new_name)
+    students[id.to_i - 1].changeName(new_name)
   end
 
   # 改名処理後の生徒情報の配列を result に格納する
