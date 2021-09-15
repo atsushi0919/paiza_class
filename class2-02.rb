@@ -1,8 +1,36 @@
 # STEP: 2 コンストラクタ
 # https://paiza.jp/works/mondai/class_primer/class_primer__constructor
 
+INPUT1 = <<~"EOS"
+  3
+  make 1 nana
+  getnum 1
+  getname 1
+EOS
+OUTPUT1 = <<~"EOS"
+  1
+  nana
+EOS
+INPUT2 = <<~"EOS"
+  7
+  make 2742 mako
+  getnum 1
+  make 2782 taisei
+  getname 2
+  make 31 megumi
+  getname 1
+  getname 3
+EOS
+OUTPUT2 = <<~"EOS"
+  2742
+  taisei
+  mako
+  megumi
+EOS
+
 class Employee
-  def initialize(number:, name:)
+  # インスタンス変数の初期化
+  def initialize(number, name)
     @number = number
     @name = name
   end
@@ -17,55 +45,40 @@ class Employee
 end
 
 def solve(input_data)
-  n, *operations = input_data.split("\n")
+  # 入力データ受け取り
+  _, *requests = input_data.split("\n")
 
-  directory = []
+  employees = []
   result = []
-  operations.each do |operation|
-    method, number, name = operation.split
+  requests.each do |request|
+    method, number, name = request.split
     number = number.to_i
-
     case method
     when "make"
-      directory << Employee.new(number: number,
-                                name: name)
+      # 引数に number, name を与えてインスタンス化して
+      # employees に push する
+      employees << Employee.new(number, name)
     when "getnum", "getname"
-      result << directory[number - 1].public_send(method)
+      # getnum 又は getname を呼び出して result に push する
+      result << employees[number - 1].public_send(method)
     end
   end
-  result
+
+  # 処理結果を改行で連結し末尾に改行を加える
+  result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
-in1 = <<~"EOS"
-  3
-  make 1 nana
-  getnum 1
-  getname 1
-EOS
-res1 = <<~"EOS"
-  1
-  nana
-EOS
-
-in2 = <<~"EOS"
-  7
-  make 2742 mako
-  getnum 1
-  make 2782 taisei
-  getname 2
-  make 31 megumi
-  getname 1
-  getname 3
-EOS
-res2 = <<~"EOS"
-  2742
-  taisei
-  mako
-  megumi
-EOS
-puts solve(in2)
+# [参考 確認用コード]
+# p solve(INPUT1)
+# > "1\nnana\n"
+# p solve(INPUT1) == OUTPUT1
+# > true
+# p solve(INPUT2)
+# > "2742\ntaisei\nmako\nmegumi\n"
+# p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 コンストラクタ (paizaランク C 相当)

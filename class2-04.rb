@@ -1,7 +1,50 @@
 # クラスの継承 (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__inheritance
 
+INPUT1 = <<~"EOS"
+  2 5
+  59
+  5
+  2 food 1223
+  1 alcohol 4461
+  1 alcohol 4573
+  1 alcohol 1438
+  2 softdrink 1581
+EOS
+OUTPUT1 = <<~"EOS"
+  10472
+  2804
+EOS
+
+INPUT2 = <<~"EOS"
+  7 7
+  62
+  91
+  29
+  33
+  79
+  15
+  91
+  2 food 3134
+  7 alcohol 2181
+  6 softdrink 4631
+  3 softdrink 3120
+  4 softdrink 4004
+  6 alcohol 1468
+  6 alcohol 1245
+EOS
+OUTPUT2 = <<~"EOS"
+  0
+  3134
+  3120
+  4004
+  0
+  4631
+  2181
+EOS
+
 class Customer
+  # payment の参照を許可
   attr_reader :payment
 
   def initialize(age:)
@@ -20,98 +63,77 @@ end
 class AdultCustomer < Customer
   DISCOUNT = 200
 
-  def initialize(age:)
+  def initialize(age)
     super
+    # 成人メニュー
     @menu_item << "alcohol"
+    # 値引きフラグ
     @discount = false
   end
 
   def order(item, price)
-    if !@discount && item == "alcohol"
-      @discount = true
-    end
-    if @discount && item == "food"
-      price -= DISCOUNT
-    end
     super
+    if !@discount && item == "alcohol"
+      # アルコール注文で値引き true
+      @discount = true
+    elsif @discount && item == "food"
+      # 値引き true なら food 注文で値引き
+      @payment -= DISCOUNT
+    end
   end
 end
 
 def solve(input_data)
+  # 入力データ受け取り
   input_data = input_data.split("\n")
   n, k = input_data.shift.split.map(&:to_i)
-  customer_list = input_data.shift(n).map(&:to_i)
-  order_list = input_data.map(&:split)
+  customers = input_data.shift(n).map(&:to_i)
+  requests = input_data.shift(k).map(&:split)
 
-  customer_list.each_with_index do |age, idx|
-    customer_list[idx] = if age < 20
-        Customer.new(age: age)
-      else
-        AdultCustomer.new(age: age)
-      end
+  # customers をインスタンス化して配列に格納する
+  customers.map! do |age, idx|
+    if age < 20
+      # 未成年なら Customerクラスでインスタンス化
+      Customer.new(age)
+    else
+      # 成人なら AdultCustomerクラスでインスタンス化
+      AdultCustomer.new(age)
+    end
   end
-  order_list.each do |order|
-    idx = order[0].to_i - 1
-    item = order[1]
-    price = order[2].to_i
-    customer_list[idx].order(item, price)
+
+  # 注文の処理
+  requests.each do |number, item, price|
+    number, price = [number, price].map(&:to_i)
+
+    #引数に item, price を与えて order を実行
+    customers[number - 1].order(item, price)
   end
-  customer_list.map { |customer| customer.payment }
+
+  # 注文が終わったら customers の先頭から順に payment を参照して配列に格納
+  result = customers.map { |customer| customer.payment }
+
+  # 支払い料金を改行で連結し末尾に改行を追加
+  result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
-in1 = <<~"EOS"
-  2 5
-  59
-  5
-  2 food 1223
-  1 alcohol 4461
-  1 alcohol 4573
-  1 alcohol 1438
-  2 softdrink 1581
-EOS
-res1 = <<~"EOS"
-  10472
-  2804
-EOS
-
-in2 = <<~"EOS"
-  7 7
-  62
-  91
-  29
-  33
-  79
-  15
-  91
-  2 food 3134
-  7 alcohol 2181
-  6 softdrink 4631
-  3 softdrink 3120
-  4 softdrink 4004
-  6 alcohol 1468
-  6 alcohol 1245
-EOS
-res2 = <<~"EOS"
-  0
-  3134
-  3120
-  4004
-  0
-  4631
-  2181
-EOS
-puts solve(in2)
+# [参考 確認用コード]
+# p solve(INPUT1)
+# > "10472\n2804\n"
+# p solve(INPUT1) == OUTPUT1
+# > true
+# p solve(INPUT2)
+# > "0\n3134\n3120\n4004\n0\n4631\n2181\n"
+# p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 クラスの継承 (paizaランク B 相当)
-問題にチャレンジして、ユーザー同士で解答を教え合ったり、コードを公開してみよう！
 
 シェア用URL:
 https://paiza.jp/works/mondai/class_primer/class_primer__inheritance
-問題文のURLをコピーする
-Img 04 03 下記の問題をプログラミングしてみよう！
+
 paiza 国の大衆居酒屋で働きながらクラスの勉強をしていたあなたは、
 お客さんをクラスに見立てることで店内の情報を管理できることに気付きました。
 全てのお客さんは、ソフトドリンクと食事を頼むことができます。

@@ -1,8 +1,44 @@
 # クラスのメンバの更新 (paizaランク C 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__change_member
 
+INPUT1 = <<~"EOS"
+  4
+  make 3 nana
+  getnum 1
+  change_num 1 5
+  getnum 1
+EOS
+OUTPUT1 = <<~"EOS"
+  3
+  5
+EOS
+
+INPUT2 = <<~"EOS"
+  12
+  make 2742 makoto
+  getnum 1
+  make 2782 taro
+  getname 1
+  getname 2
+  change_num 2 9927
+  change_name 1 mako
+  getnum 2
+  make 31 meu
+  change_name 3 meumeu
+  getnum 3
+  getname 1
+EOS
+OUTPUT2 = <<~"EOS"
+  2742
+  makoto
+  taro
+  9927
+  31
+  mako
+EOS
+
 class Employee
-  def initialize(number:, name:)
+  def initialize(number, name)
     @number = number
     @name = name
   end
@@ -25,71 +61,44 @@ class Employee
 end
 
 def solve(input_data)
-  n, *operations = input_data.split("\n")
+  # 入力データ受け取り
+  _, *requests = input_data.split("\n")
 
-  directory = []
+  employees = []
   result = []
-  operations.each do |operation|
-    method, *params = operation.split
+  requests.each do |request|
+    method, number, param = request.split
+    number = number.to_i
 
     case method
     when "make"
-      number, name = params
-      number = number.to_i
-      directory << Employee.new(number: number,
-                                name: name)
-    when "change_num"
-      index, new_number = params.map(&:to_i)
-      directory[index - 1].change_num(new_number)
-    when "change_name"
-      index, new_name = params
-      directory[index.to_i - 1].change_name(new_name)
+      # 引数に number, name を与えてインスタンス化して
+      # employees に push する
+      employees << Employee.new(number, param)
+    when "change_num", "change_name"
+      # 引数に param を与えて change_num 又は change_name を実行
+      employees[number - 1].public_send(method, param)
     when "getnum", "getname"
-      number = params[0].to_i - 1
-      result << directory[number].public_send(method)
+      # getnum 又は getname でデータを参照して result に push する
+      result << employees[number - 1].public_send(method)
     end
   end
-  result
+
+  # 処理結果を改行で連結し末尾に改行を加える
+  result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
-in1 = <<~"EOS"
-  4
-  make 3 nana
-  getnum 1
-  change_num 1 5
-  getnum 1
-EOS
-res1 = <<~"EOS"
-  3
-  5
-EOS
-
-in2 = <<~"EOS"
-  12
-  make 2742 makoto
-  getnum 1
-  make 2782 taro
-  getname 1
-  getname 2
-  change_num 2 9927
-  change_name 1 mako
-  getnum 2
-  make 31 meu
-  change_name 3 meumeu
-  getnum 3
-  getname 1
-EOS
-res2 = <<~"EOS"
-  2742
-  makoto
-  taro
-  9927
-  31
-  mako
-EOS
-puts solve(in2)
+# [参考 確認用コード]
+# p solve(INPUT1)
+# > "3\n5\n"
+# p solve(INPUT1) == OUTPUT1
+# > true
+# p solve(INPUT2)
+# > "2742\nmakoto\ntaro\n9927\n31\nmako\n"
+# p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 クラスのメンバの更新 (paizaランク C 相当)

@@ -1,11 +1,37 @@
 # STEP: 1 クラスの作成
 # https://paiza.jp/works/mondai/class_primer/class_primer__make_class
 
+INPUT1 = <<~"EOS"
+  3
+  make 1 nana
+  getnum 1
+  getname 1
+EOS
+OUTPUT1 = <<~"EOS"
+  1
+  nana
+EOS
+
+INPUT2 = <<~"EOS"
+  7
+  make 2742 mako
+  getnum 1
+  make 2782 taisei
+  getname 2
+  make 31 megumi
+  getname 1
+  getname 3
+EOS
+OUTPUT2 = <<~"EOS"
+  2742
+  taisei
+  mako
+  megumi
+EOS
+
 class Employee
-  def initialize(number:, name:)
-    @number = number
-    @name = name
-  end
+  # クラス外から @number, @name の更新を許可
+  attr_writer :number, :name
 
   def getnum
     @number
@@ -17,55 +43,43 @@ class Employee
 end
 
 def solve(input_data)
-  n, *operations = input_data.split("\n")
+  # 入力データ受け取り
+  _, *requests = input_data.split("\n")
 
-  directory = []
+  employees = []
   result = []
-  operations.each do |operation|
-    method, number, name = operation.split
+  requests.each do |request|
+    method, number, name = request.split
     number = number.to_i
-
     case method
     when "make"
-      directory << Employee.new(number: number,
-                                name: name)
+      # インスタンス化してデータを入力する
+      employee = Employee.new
+      employee.number = number
+      employee.name = name
+      # employee を employees に push する
+      employees << employee
     when "getnum", "getname"
-      result << directory[number - 1].public_send(method)
+      # getnum, getname でデータを参照して result に push する
+      result << employees[number - 1].public_send(method)
     end
   end
-  result
+
+  # 処理結果を改行で連結し末尾に改行を加える
+  result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
-in1 = <<~"EOS"
-  3
-  make 1 nana
-  getnum 1
-  getname 1
-EOS
-res1 = <<~"EOS"
-  1
-  nana
-EOS
-
-in2 = <<~"EOS"
-  7
-  make 2742 mako
-  getnum 1
-  make 2782 taisei
-  getname 2
-  make 31 megumi
-  getname 1
-  getname 3
-EOS
-res2 = <<~"EOS"
-  2742
-  taisei
-  mako
-  megumi
-EOS
-puts solve(in2)
+# [参考 確認用コード]
+# p solve(INPUT1)
+# > "1\nnana\n"
+# > p solve(INPUT1) == OUTPUT1
+# > true
+# p solve(INPUT2)
+# > "2742\ntaisei\nmako\nmegumi\n"
+# > p solve(INPUT2) == OUTPUT2
+# true
 
 =begin
 クラスの作成 (paizaランク C 相当)
