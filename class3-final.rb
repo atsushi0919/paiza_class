@@ -50,6 +50,7 @@ class Factory
 end
 
 def solve(input_data)
+  toolbox = 10
   input_data = input_data.split("\n")
   h, w, n, k = input_data.shift.split.map(&:to_i)
 
@@ -74,7 +75,6 @@ def solve(input_data)
   end
 end
 
-TOOLBOX = 10
 #puts solve(STDIN.read)
 
 in1 = <<~"EOS"
