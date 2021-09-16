@@ -1,76 +1,7 @@
 # 静的メンバ (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__static_member
 
-class Customer
-  attr_reader :payment
-
-  def initialize(age:)
-    @age = age
-    @menu_item = ["food", "softdrink"]
-    @payment = 0
-  end
-
-  def order(item = "", price = 0)
-    if @menu_item.include?(item)
-      @payment += price
-    end
-  end
-end
-
-class AdultCustomer < Customer
-  DISCOUNT = 200
-
-  def initialize(age:)
-    super
-    @menu_item << "alcohol"
-    @discount = false
-  end
-
-  def order(item = "alcohol", price = 500)
-    if !@discount && item == "alcohol"
-      @discount = true
-    end
-    if @discount && item == "food"
-      price -= DISCOUNT
-    end
-    super
-  end
-end
-
-def solve(input_data)
-  input_data = input_data.split("\n")
-  n, k = input_data.shift.split.map(&:to_i)
-  customer_list = input_data.shift(n).map(&:to_i)
-  order_list = input_data.map(&:split)
-
-  customer_list.each_with_index do |age, idx|
-    customer_list[idx] = if age < 20
-        Customer.new(age: age)
-      else
-        AdultCustomer.new(age: age)
-      end
-  end
-
-  paid_customers = {}
-  order_list.each do |order|
-    idx, item, price = order
-    idx = idx.to_i - 1
-
-    case item
-    when "0"
-      customer_list[idx].order
-    when "A"
-      paid_customers[idx] = customer_list[idx].payment
-    else
-      customer_list[idx].order(item, price.to_i)
-    end
-  end
-  [paid_customers.values, paid_customers.size]
-end
-
-#puts solve(STDIN.read)
-
-in1 = <<~"EOS"
+INPUT1 = <<~"EOS"
   2 3
   20
   30
@@ -78,12 +9,12 @@ in1 = <<~"EOS"
   2 0
   1 A
 EOS
-res1 = <<~"EOS"
+OUTPUT1 = <<~"EOS"
   500
   1
 EOS
 
-in2 = <<~"EOS"
+INPUT2 = <<~"EOS"
   7 12
   68
   85
@@ -105,12 +36,103 @@ in2 = <<~"EOS"
   1 softdrink 797
   2 alcohol 4284
 EOS
-res2 = <<~"EOS"
+OUTPUT2 = <<~"EOS"
   0
   0
   2
 EOS
-puts solve(in1)
+
+class Customer
+  @@count = 0
+
+  def initialize(age)
+    @age = age
+    @menu_item = ["food", "softdrink"]
+    @payment = 0
+  end
+
+  def self.count
+    @@count
+  end
+
+  def order(item = "alcohol", price = 500)
+    @payment += price if @menu_item.include?(item)
+  end
+
+  def checkout
+    @@count += 1
+    @payment
+  end
+end
+
+class AdultCustomer < Customer
+  DISCOUNT = 200
+
+  def initialize(age)
+    super
+    @menu_item << "alcohol"
+    @discount = false
+  end
+
+  def order(item = "alcohol", price = 500)
+    super
+    if @discount
+      # food 注文なら値引き
+      @payment -= DISCOUNT if item == "food"
+    else
+      # アルコール注文で値引き true
+      @discount = true if item == "alcohol"
+    end
+  end
+end
+
+def solve(input_data)
+  # 入力データ受け取り
+  input_data = input_data.split("\n")
+  n, k = input_data.shift.split.map(&:to_i)
+  customers = input_data.shift(n).map(&:to_i)
+  requests = input_data.map(&:split)
+
+  # customers をインスタンス化して配列を上書きする
+  customers.map! do |age|
+    if age < 20
+      # 未成年なら Customer クラスでインスタンス化
+      Customer.new(age)
+    else
+      # 成人なら AdultCustomer クラスでインスタンス化
+      AdultCustomer.new(age)
+    end
+  end
+
+  # 注文の処理
+  result = []
+  requests.each do |number, item, price|
+    number, price = [number, price].map(&:to_i)
+
+    case item
+    when "0"
+      # "0" なら引数無しで order を実行
+      customers[number - 1].order
+    when "A"
+      result << customers[number - 1].checkout
+    else
+      customers[number - 1].order(item, price)
+    end
+  end
+  # result に退店した客の人数を push
+  result << Customer.count
+
+  result.join("\n") << "\n"
+end
+
+#puts solve(STDIN.read)
+
+# [確認用コード]
+# 注：@@countが連番になるので個別に確認
+# p solve(INPUT1)
+# p solve(INPUT1) == OUTPUT1
+# p solve(INPUT2)
+# p solve(INPUT2) == OUTPUT2
 
 =begin
 静的メンバ (paizaランク B 相当)
@@ -120,15 +142,19 @@ puts solve(in1)
 https://paiza.jp/works/mondai/class_primer/class_primer__static_member
 問題文のURLをコピーする
 Img 04 03 下記の問題をプログラミングしてみよう！
-居酒屋で働きながらクラスの勉強をしていたあなたは、お客さんをクラスに見立てることで勤務時間中の店内の人数や注文の情報を管理できることに気付きました。
+居酒屋で働きながらクラスの勉強をしていたあなたは、お客さんをクラスに見立てることで
+勤務時間中の店内の人数や注文の情報を管理できることに気付きました。
 全てのお客さんは、ソフトドリンクと食事を頼むことができます。加えて 20 歳以上のお客さんはお酒を頼むことができます。
 20 歳未満のお客さんがお酒を頼もうとした場合はその注文は取り消されます。
 また、お酒（ビールを含む）を頼んだ場合、以降の全ての食事の注文 が毎回 200 円引きになります。
 
-今回、この居酒屋でビールフェスをやることになり、ビールの注文が相次いだため、いちいちビールの値段である 500 円を書くのをやめ、注文の種類と値段を書く代わりに 0 とだけを書くことになりました。
+今回、この居酒屋でビールフェスをやることになり、ビールの注文が相次いだため、
+いちいちビールの値段である 500 円を書くのをやめ、注文の種類と値段を書く代わりに 0 とだけを書くことになりました。
 
-勤務時間の初めに店内にいるお客さんの人数と与えられる入力の回数、各注文をしたお客さんの番号とその内容、または退店したお客さんの番号が与えられます。
-お客さんが退店する場合はそのお客さんの会計を出力してください。勤務時間中に退店した全てのお客さんの会計を出力したのち、勤務時間中に退店した客の人数を出力してください。
+勤務時間の初めに店内にいるお客さんの人数と与えられる入力の回数、各注文をしたお客さんの番号とその内容、
+または退店したお客さんの番号が与えられます。
+お客さんが退店する場合はそのお客さんの会計を出力してください。勤務時間中に退店した全てのお客さんの会計を出力したのち、
+勤務時間中に退店した客の人数を出力してください。
 
 ▼　下記解答欄にコードを記入してみよう
 

@@ -1,70 +1,7 @@
 # デフォルト引数 (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__set_default
 
-class Customer
-  attr_reader :payment
-
-  def initialize(age:)
-    @age = age
-    @menu_item = ["food", "softdrink"]
-    @payment = 0
-  end
-
-  def order(item = "", price = 0)
-    if @menu_item.include?(item)
-      @payment += price
-    end
-  end
-end
-
-class AdultCustomer < Customer
-  DISCOUNT = 200
-
-  def initialize(age:)
-    super
-    @menu_item << "alcohol"
-    @discount = false
-  end
-
-  def order(item = "alcohol", price = 500)
-    if !@discount && item == "alcohol"
-      @discount = true
-    end
-    if @discount && item == "food"
-      price -= DISCOUNT
-    end
-    super
-  end
-end
-
-def solve(input_data)
-  input_data = input_data.split("\n")
-  n, k = input_data.shift.split.map(&:to_i)
-  customer_list = input_data.shift(n).map(&:to_i)
-  order_list = input_data.map(&:split)
-
-  customer_list.each_with_index do |age, idx|
-    customer_list[idx] = if age < 20
-        Customer.new(age: age)
-      else
-        AdultCustomer.new(age: age)
-      end
-  end
-  order_list.each do |order|
-    idx, item, price = order
-    idx = idx.to_i - 1
-    if item == "0"
-      customer_list[idx].order
-    else
-      customer_list[idx].order(item, price.to_i)
-    end
-  end
-  customer_list.map { |customer| customer.payment }
-end
-
-#puts solve(STDIN.read)
-
-in1 = <<~"EOS"
+INPUT1 = <<~"EOS"
   3 5
   19
   43
@@ -75,13 +12,13 @@ in1 = <<~"EOS"
   2 0
   1 food 4606
 EOS
-res1 = <<~"EOS"
+OUTPUT1 = <<~"EOS"
   4606
   5133
   0
 EOS
 
-in2 = <<~"EOS"
+INPUT2 = <<~"EOS"
   5 10
   1
   13
@@ -99,14 +36,93 @@ in2 = <<~"EOS"
   3 0
   2 0
 EOS
-res2 = <<~"EOS"
+OUTPUT2 = <<~"EOS"
   1088
   4375
   500
   4762
   4565
 EOS
-puts solve(in2)
+
+class Customer
+  attr_reader :payment
+
+  def initialize(age)
+    @age = age
+    @menu_item = ["food", "softdrink"]
+    @payment = 0
+  end
+
+  def order(item = "alcohol", price = 500)
+    @payment += price if @menu_item.include?(item)
+  end
+end
+
+class AdultCustomer < Customer
+  DISCOUNT = 200
+
+  def initialize(age)
+    super
+    @menu_item << "alcohol"
+    @discount = false
+  end
+
+  def order(item = "alcohol", price = 500)
+    super
+    if @discount
+      # food 注文なら値引き
+      @payment -= DISCOUNT if item == "food"
+    else
+      # アルコール注文で値引き true
+      @discount = true if item == "alcohol"
+    end
+  end
+end
+
+def solve(input_data)
+  # 入力データ受け取り
+  input_data = input_data.split("\n")
+  n, k = input_data.shift.split.map(&:to_i)
+  customers = input_data.shift(n).map(&:to_i)
+  requests = input_data.map(&:split)
+
+  # customers をインスタンス化して配列を上書きする
+  customers.map! do |age|
+    if age < 20
+      # 未成年なら Customer クラスでインスタンス化
+      Customer.new(age)
+    else
+      # 成人なら AdultCustomer クラスでインスタンス化
+      AdultCustomer.new(age)
+    end
+  end
+
+  # 注文の処理
+  requests.each do |number, item, price|
+    number, price = [number, price].map(&:to_i)
+
+    if item == "0"
+      # "0" なら引数無しで order を実行
+      customers[number - 1].order
+    else
+      # 引数に item, price を与えて order を実行
+      customers[number - 1].order(item, price.to_i)
+    end
+  end
+
+  # 注文が終わったら customers の先頭から順に payment を参照して配列に格納
+  result = customers.map { |customer| customer.payment }
+
+  # 支払い料金を改行で連結し末尾に改行を追加
+  result.join("\n") << "\n"
+end
+
+#puts solve(STDIN.read)
+
+p solve(INPUT1)
+p solve(INPUT1) == OUTPUT1
+p solve(INPUT2)
+p solve(INPUT2) == OUTPUT2
 
 =begin
 デフォルト引数 (paizaランク B 相当)

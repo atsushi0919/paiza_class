@@ -60,7 +60,7 @@ def solve(input_data)
       # employee を employees に push する
       employees << employee
     when "getnum", "getname"
-      # getnum, getname でデータを参照して result に push する
+      # getnum 又は getname でデータを参照して result に push する
       result << employees[number - 1].public_send(method)
     end
   end

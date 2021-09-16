@@ -47,16 +47,14 @@ class Customer
   # payment の参照を許可
   attr_reader :payment
 
-  def initialize(age:)
+  def initialize(age)
     @age = age
-    @menu_item = ["food", "softdrink"]
+    @menu = ["food", "softdrink"]
     @payment = 0
   end
 
   def order(item, price)
-    if @menu_item.include?(item)
-      @payment += price
-    end
+    @payment += price if @menu.include?(item)
   end
 end
 
@@ -66,19 +64,19 @@ class AdultCustomer < Customer
   def initialize(age)
     super
     # 成人メニュー
-    @menu_item << "alcohol"
+    @menu << "alcohol"
     # 値引きフラグ
     @discount = false
   end
 
   def order(item, price)
     super
-    if !@discount && item == "alcohol"
+    if @discount
+      # food 注文なら値引き
+      @payment -= DISCOUNT if item == "food"
+    else
       # アルコール注文で値引き true
-      @discount = true
-    elsif @discount && item == "food"
-      # 値引き true なら food 注文で値引き
-      @payment -= DISCOUNT
+      @discount = true if item == "alcohol"
     end
   end
 end
@@ -90,13 +88,13 @@ def solve(input_data)
   customers = input_data.shift(n).map(&:to_i)
   requests = input_data.shift(k).map(&:split)
 
-  # customers をインスタンス化して配列に格納する
-  customers.map! do |age, idx|
+  # customers をインスタンス化して配列を上書きする
+  customers.map! do |age|
     if age < 20
-      # 未成年なら Customerクラスでインスタンス化
+      # 未成年なら Customer クラスでインスタンス化
       Customer.new(age)
     else
-      # 成人なら AdultCustomerクラスでインスタンス化
+      # 成人なら AdultCustomer クラスでインスタンス化
       AdultCustomer.new(age)
     end
   end
@@ -105,7 +103,7 @@ def solve(input_data)
   requests.each do |number, item, price|
     number, price = [number, price].map(&:to_i)
 
-    #引数に item, price を与えて order を実行
+    # 引数に item, price を与えて order を実行
     customers[number - 1].order(item, price)
   end
 
@@ -116,16 +114,16 @@ def solve(input_data)
   result.join("\n") << "\n"
 end
 
-puts solve(STDIN.read)
+#puts solve(STDIN.read)
 
 # [参考 確認用コード]
-# p solve(INPUT1)
+#p solve(INPUT1)
 # > "10472\n2804\n"
-# p solve(INPUT1) == OUTPUT1
+#p solve(INPUT1) == OUTPUT1
 # > true
-# p solve(INPUT2)
+p solve(INPUT2)
 # > "0\n3134\n3120\n4004\n0\n4631\n2181\n"
-# p solve(INPUT2) == OUTPUT2
+#p solve(INPUT2) == OUTPUT2
 # > true
 
 =begin
