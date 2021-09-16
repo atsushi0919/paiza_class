@@ -25,9 +25,6 @@ OUTPUT2 = <<~"EOS"
 EOS
 
 class Student
-  attr_reader :old
-  attr_writer :name
-
   def initialize(name, old, birth, state)
     @name = name
     @old = old
@@ -36,7 +33,7 @@ class Student
   end
 
   def info
-    "#{@name} #{@old} #{@birth} #{@state}"
+    [@name, @old, @birth, @state].join(" ")
   end
 
   def changeName(new_name)
@@ -48,8 +45,8 @@ def solve(input_lines)
   # 入力データ受け取り
   input_lines = input_lines.split("\n")
   n, k = input_lines.shift.split.map(&:to_i)
-  *students = input_lines.shift(n)
-  *requests = input_lines.shift(k)
+  students = input_lines.shift(n)
+  requests = input_lines.shift(k)
 
   # students をインスタンスの配列に置き換える
   students.map! do |student|
@@ -57,7 +54,7 @@ def solve(input_lines)
     Student.new(name, old.to_i, birth, state)
   end
 
-  # 改名の要求があればchangeNameを呼び出す
+  # 名前の変更要求があればchangeNameを呼び出す
   requests.each do |request|
     id, new_name = request.split
     students[id.to_i - 1].changeName(new_name)
@@ -66,21 +63,13 @@ def solve(input_lines)
   # 改名処理後の生徒情報の配列を result に格納する
   result = students.map { |student| student.info }
 
-  # 生徒情報を改行で連結し末尾に改行を加える
+  # resultの要素を半角スペースで結合し末尾に改行を追加
   result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
-# [参考 確認用コード]
-p solve(INPUT1)
-# > "nana 23 04/10 tokyo\n"
-p solve(INPUT1) == OUTPUT1
-# > true
-p solve(INPUT2)
-# > "mako 13 08/08 nara\ntaihei 16 12/04 nagano\nmegu 14 11/02 saitama\n"
-p solve(INPUT2) == OUTPUT2
-# > true
+exit
 
 =begin
 構造体の更新 (paizaランク C 相当)

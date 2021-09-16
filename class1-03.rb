@@ -32,7 +32,7 @@ class Student
   end
 
   def info
-    "#{@name} #{@old} #{@birth} #{@state}"
+    [@name, @old, @birth, @state].join(" ")
   end
 end
 
@@ -40,13 +40,13 @@ def solve(input_data)
   # 入力データ受け取り
   _, *students = input_data.split("\n")
 
-  # 配列students を先頭から順にインスタンス化した配列で上書きする
+  # students を先頭から順にインスタンス化した配列で上書きする
   students.map! do |student|
     name, old, birth, state = student.split
     Student.new(name, old.to_i, birth, state)
   end
 
-  # students を 生徒の年齢順で並び替える
+  # students を年齢順で並び替える
   # 先頭から順に入力と同じ形式の文字列を配列にして result に格納する
   result = students.sort_by { |student| student.old }.map(&:info)
 
@@ -54,7 +54,7 @@ def solve(input_data)
   result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
 # [参考 確認用コード]
 # pp solve(INPUT1)
