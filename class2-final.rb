@@ -45,14 +45,15 @@ EOS
 class Customer
   @@count = 0
 
+  # 来店者数を返すクラスメソッド
+  def Customer.visitor_count
+    @@count
+  end
+
   def initialize(age)
     @age = age
     @menu_item = ["food", "softdrink"]
     @payment = 0
-  end
-
-  def self.visitor_count
-    @@count
   end
 
   def order(item = "alcohol", price = 500)
