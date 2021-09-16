@@ -114,25 +114,32 @@ def solve(input_data)
       # "0" なら引数無しで order を実行
       customers[number - 1].order
     when "A"
+      # "A" なら checkout を実行
       result << customers[number - 1].checkout
     else
+      # 引数に item, price を与えて order を実行
       customers[number - 1].order(item, price)
     end
   end
   # result に退店した客の人数を push
   result << Customer.visitor_count
 
+  # result の要素を改行で連結し末尾に改行を追加
   result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
 # [確認用コード]
 # 注：@@countが連番なので個別に確認
 # p solve(INPUT1)
+# > "500\n1\n"
 # p solve(INPUT1) == OUTPUT1
+# > true
 # p solve(INPUT2)
+# > "0\n0\n2\n"
 # p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 静的メンバ (paizaランク B 相当)
