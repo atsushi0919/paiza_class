@@ -51,7 +51,7 @@ class Customer
     @payment = 0
   end
 
-  def self.count
+  def self.visitor_count
     @@count
   end
 
@@ -120,7 +120,7 @@ def solve(input_data)
     end
   end
   # result に退店した客の人数を push
-  result << Customer.count
+  result << Customer.visitor_count
 
   result.join("\n") << "\n"
 end
@@ -128,7 +128,7 @@ end
 #puts solve(STDIN.read)
 
 # [確認用コード]
-# 注：@@countが連番になるので個別に確認
+# 注：@@countが連番なので個別に確認
 # p solve(INPUT1)
 # p solve(INPUT1) == OUTPUT1
 # p solve(INPUT2)
