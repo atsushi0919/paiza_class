@@ -7,6 +7,53 @@ class Apple
              "green" => "緑",
              "yellow" => "黄",
              "other" => "他" }
+  @@counter = 1
+
+  # @@counter を参照するクラスメソッド
+  def self.get_counter
+    @@counter
+  end
+
+  def initialize(name, color, sweetness, sour)
+    @id = @@counter
+    @@counter += 1
+    @name = name
+    @color = color
+    @sweetness = sweetness
+    @sour = sour
+  end
+
+  def information
+    "品種番号：#{"%2d" % @id}  品種名：#{@name.ljust(4, "　")}  色：#{JCOLOR[@color]}  " <<
+    "甘さ：#{@sweetness}  酸っぱさ：#{@sour}"
+  end
+end
+
+apple_list = [["トキ", "yellow", 5, 2],
+              ["フジ", "red", 3, 3],
+              ["王林", "green", 5, 1],
+              ["紅玉", "red", 1, 5],
+              ["陸奥", "other", 2, 3]]
+
+# Appleクラスのインスタンスを生成する
+apples = apple_list.map do |name, color, sweetness, sour|
+  Apple.new(name, color, sweetness, sour)
+end
+
+# クラス変数 @@counter を出力する
+p Apple.get_counter
+# > 6
+
+=begin
+class Apple
+  attr_reader :name, :color
+  attr_accessor :sweetness, :sour
+
+  # 英語と日本語の対応を定数にする
+  JCOLOR = { "red" => "赤",
+             "green" => "緑",
+             "yellow" => "黄",
+             "other" => "他" }
   # クラス変数で通し番号を管理する
   @@counter = 1
 
@@ -37,12 +84,15 @@ apples = apple_list.map do |name, color, sweetness, sour|
 end
 
 # りんごの情報を表示する
-apples.each { |apple| puts apple.information }
+#apples.each { |apple| puts apple.information }
 # > 品種番号： 1  品種名：トキ　　  色：黄  甘さ：5  酸っぱさ：2
 # > 品種番号： 2  品種名：フジ　　  色：赤  甘さ：3  酸っぱさ：3
 # > 品種番号： 3  品種名：王林　　  色：緑  甘さ：5  酸っぱさ：1
 # > 品種番号： 4  品種名：紅玉　　  色：赤  甘さ：1  酸っぱさ：5
 # > 品種番号： 5  品種名：陸奥　　  色：他  甘さ：2  酸っぱさ：3
+
+p apples[0].to_s
+=end
 
 =begin
 class Apple
