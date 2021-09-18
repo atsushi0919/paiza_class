@@ -43,6 +43,7 @@ OUTPUT2 = <<~"EOS"
 EOS
 
 class Customer
+  # 来店者数(清算時にカウントアップ)
   @@count = 0
 
   # 来店者数を返すクラスメソッド

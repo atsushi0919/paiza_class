@@ -100,11 +100,11 @@ def solve(input_data)
   end
 
   # 注文の処理
-  requests.each do |number, item, price|
-    number, price = [number, price].map(&:to_i)
+  requests.each do |idx, item, price|
+    idx, price = [idx, price].map(&:to_i)
 
     # 引数に item, price を与えて order を実行
-    customers[number - 1].order(item, price)
+    customers[idx - 1].order(item, price)
   end
 
   # 注文が終わったら customers の先頭から順に payment を参照して配列に格納
@@ -117,13 +117,13 @@ end
 #puts solve(STDIN.read)
 
 # [参考 確認用コード]
-#p solve(INPUT1)
+# p solve(INPUT1)
 # > "10472\n2804\n"
-#p solve(INPUT1) == OUTPUT1
+# p solve(INPUT1) == OUTPUT1
 # > true
-p solve(INPUT2)
+# p solve(INPUT2)
 # > "0\n3134\n3120\n4004\n0\n4631\n2181\n"
-#p solve(INPUT2) == OUTPUT2
+# p solve(INPUT2) == OUTPUT2
 # > true
 
 =begin

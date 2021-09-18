@@ -117,12 +117,16 @@ def solve(input_data)
   result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
-p solve(INPUT1)
-p solve(INPUT1) == OUTPUT1
-p solve(INPUT2)
-p solve(INPUT2) == OUTPUT2
+# p solve(INPUT1)
+# > "4606\n5133\n0\n"
+# p solve(INPUT1) == OUTPUT1
+# > true
+# p solve(INPUT2)
+# > "1088\n4375\n500\n4762\n4565\n"
+# p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 デフォルト引数 (paizaランク B 相当)
