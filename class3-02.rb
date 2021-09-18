@@ -1,84 +1,18 @@
 # RPG (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__heros
 
-class Brave
-  def initialize(level,
-                 hp,
-                 attack,
-                 defence,
-                 speed,
-                 intelligence,
-                 luck)
-    @level = level
-    @hp = hp
-    @attack = attack
-    @defence = defence
-    @speed = speed
-    @intelligence = intelligence
-    @luck = luck
-  end
-
-  def info
-    [@level, @hp, @attack, @defence, @speed, @intelligence, @luck]
-  end
-
-  def levelup(hp, attack, defence, speed, intelligence, luck)
-    @level += 1
-    muscle_training(hp, attack)
-    running(defence, speed)
-    study(intelligence)
-    pray(luck)
-  end
-
-  def muscle_training(hp, attack)
-    @hp += hp
-    @attack += attack
-  end
-
-  def running(defence, speed)
-    @defence += defence
-    @speed += speed
-  end
-
-  def study(intelligence)
-    @intelligence += intelligence
-  end
-
-  def pray(luck)
-    @luck += luck
-  end
-end
-
-def solve(input_data)
-  input_data = input_data.split("\n")
-  n, k = input_data.shift.split.map(&:to_i)
-
-  brave_list = input_data.shift(n).map do |brave_params|
-    Brave.new(*brave_params.split.map(&:to_i))
-  end
-
-  input_data.each do |event_params|
-    idx, event, *params = event_params.split
-    idx = idx.to_i - 1
-    brave_list[idx].public_send(event, *params.map(&:to_i))
-  end
-  brave_list.map { |brave| brave.info.join(" ") }
-end
-
-#puts solve(STDIN.read)
-
-in1 = <<~"EOS"
+INPUT1 = <<~"EOS"
   1 3
   23 128 533 552 44 69 420
   1 muscle_training 565 241
   1 study 132
   1 levelup 379 585 4 145 276 8
 EOS
-res1 = <<~"EOS"
+OUTPUT1 = <<~"EOS"
   24 1072 1359 556 189 477 428
 EOS
 
-in2 = <<~"EOS"
+INPUT2 = <<~"EOS"
   10 20
   161 295 842 678 857 640 702
   703 973 816 584 474 996 452
@@ -111,7 +45,7 @@ in2 = <<~"EOS"
   5 muscle_training 1000 676
   9 study 125
 EOS
-res2 = <<~"EOS"
+OUTPUT2 = <<~"EOS"
   161 295 842 678 857 640 702
   703 973 816 584 474 996 1338
   641 1930 1410 579 1174 835 2480
@@ -123,7 +57,88 @@ res2 = <<~"EOS"
   217 537 596 50 807 488 299
   124 1090 2208 605 471 1607 976
 EOS
-puts solve(in1)
+
+class Hero
+  def initialize(lv, hp, ap, dp, sp, cp, fp)
+    @lv = lv
+    @hp = hp
+    @ap = ap
+    @dp = dp
+    @sp = sp
+    @cp = cp
+    @fp = fp
+  end
+
+  def info
+    [@lv, @hp, @ap, @dp, @sp, @cp, @fp].join(" ")
+  end
+
+  def levelup(hp, ap, dp, sp, cp, fp)
+    @lv += 1
+    muscle_training(hp, ap)
+    running(dp, sp)
+    study(cp)
+    pray(fp)
+  end
+
+  def muscle_training(hp, ap)
+    @hp += hp
+    @ap += ap
+  end
+
+  def running(dp, sp)
+    @dp += dp
+    @sp += sp
+  end
+
+  def study(cp)
+    @cp += cp
+  end
+
+  def pray(fp)
+    @fp += fp
+  end
+end
+
+def solve(input_lines)
+  input_lines = input_lines.split("\n")
+  n, k = input_lines.shift.split.map(&:to_i)
+  heros = input_lines.shift(n).map do |hero_params|
+    Hero.new(*hero_params.split.map(&:to_i))
+  end
+  events = input_lines.shift(k).map do |event_params|
+    idx, event, *params = event_params.split
+    [idx.to_i - 1, event, params.map(&:to_i)]
+  end
+
+  # イベントを実行する
+  events.each do |idx, event, params|
+    heros[idx].public_send(event, *params)
+  end
+
+  # herosの先頭から順に info メソッドを実行した結果を改行で連結し末尾に改行を追加
+  heros.map { |hero| hero.info }.join("\n") << "\n"
+end
+
+#puts solve(STDIN.read)
+
+# pp solve(INPUT1)
+# > "24 1072 1359 556 189 477 428\n"
+# p solve(INPUT1) == OUTPUT1
+# > true
+# pp solve(INPUT2)
+# > "161 295 842 678 857 640 702\n" +
+# > "703 973 816 584 474 996 1338\n" +
+# > "641 1930 1410 579 1174 835 2480\n" +
+# > "621 1313 760 298 297 699 963\n" +
+# > "82 1075 1360 44 706 828 615\n" +
+# > "509 307 831 957 156 705 638\n" +
+# > "224 322 857 338 11 1740 218\n" +
+# > "344 871 1576 1472 1183 1492 1101\n" +
+# > "217 537 596 50 807 488 299\n" +
+# > "124 1090 2208 605 471 1607 976\n"
+# p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 RPG (paizaランク B 相当)
@@ -265,5 +280,5 @@ event_i (1 ≦ i ≦ K) は以下のいずれかの形式で与えられる。
 224 322 857 338 11 1740 218
 344 871 1576 1472 1183 1492 1101
 217 537 596 50 807 488 299
-124 1090 2208 605 471 1607 976  
+124 1090 2208 605 471 1607 976
 =end
