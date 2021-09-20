@@ -126,6 +126,52 @@ def solve(input_data)
   # result に退店した客の人数を push
   result << Customer.visitor_count
 
+  # result を改行で連結して末尾に改行を追加
+  result.join("\n") << "\n"
+end
+
+puts solve(STDIN.read)
+
+exit
+=begin
+def solve(input_data)
+  # 入力データ受け取り
+  input_data = input_data.split("\n")
+  n, k = input_data.shift.split.map(&:to_i)
+  customers = input_data.shift(n).map(&:to_i)
+  requests = input_data.map(&:split)
+
+  # customers をインスタンス化して配列を上書きする
+  customers.map! do |age|
+    if age < 20
+      # 未成年なら Customer クラスでインスタンス化
+      Customer.new(age)
+    else
+      # 成人なら AdultCustomer クラスでインスタンス化
+      AdultCustomer.new(age)
+    end
+  end
+
+  # 注文の処理
+  result = []
+  requests.each do |number, item, price|
+    number, price = [number, price].map(&:to_i)
+
+    case item
+    when "0"
+      # "0" なら引数無しで order を実行
+      customers[number - 1].order
+    when "A"
+      # "A" なら checkout を実行
+      result << customers[number - 1].checkout
+    else
+      # 引数に item, price を与えて order を実行
+      customers[number - 1].order(item, price)
+    end
+  end
+  # result に退店した客の人数を push
+  result << Customer.visitor_count
+
   # result の要素を改行で連結し末尾に改行を追加
   result.join("\n") << "\n"
 end
@@ -142,6 +188,7 @@ puts solve(STDIN.read)
 # > "0\n0\n2\n"
 # p solve(INPUT2) == OUTPUT2
 # > true
+=end
 
 =begin
 静的メンバ (paizaランク B 相当)
