@@ -114,7 +114,7 @@ def solve(input_data)
   result.join("\n") << "\n"
 end
 
-#puts solve(STDIN.read)
+puts solve(STDIN.read)
 
 # [参考 確認用コード]
 # p solve(INPUT1)
