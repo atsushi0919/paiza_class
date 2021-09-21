@@ -47,6 +47,14 @@ class Player
     @skills = skills
   end
 
+  def speed(no)
+    @skills[no - 1][:speed]
+  end
+
+  def attack(no)
+    @skills[no - 1][:power]
+  end
+
   def reinforce
     @skills.each do |skill|
       if skill[:speed] > 0
@@ -54,6 +62,11 @@ class Player
         skill[:power] += 5
       end
     end
+    return 0
+  end
+
+  def use_skill(no)
+    speed(no) == 0 ? reinforce : attack(no)
   end
 end
 
@@ -64,15 +77,26 @@ class FightingGame
     @players = players
   end
 
-  def fighting(fighting_params)
-    fighting_order = judge_skill_speed(fighting_params)
-    return if fighting_order.nil?
+  def fighting(p_no1, s_no1, p_no2, s_no2)
+    # 戦うプレイヤーを選択
+    fight_players = [players[p_no1 - 1], players[p_no2 - 1]]
 
+    # どちらかが倒れていれば何もしない
+    return if fight_players.any? { |player| player.hp == 0 }
+
+    # スピード順でソート
+    fight_players.sort_by! { |player| player.speed() }
+
+    # 強化技の処理
+    fighting_order.each { |player| player.reinforce if skill[:speed] == 0 }
+
+    # 攻撃技の処理
     player1, player2 = fighting_order
-    # 強化技使用
-    if player1[:skill][:speed] == 0 && player2[:skill][:speed] == 0
-      return
-    elsif player1[:skill][:speed] == 0
+    # どちらも強化技なら何もしない
+    return if player1[:skill][:speed] == 0 && player2[:skill][:speed] == 0
+
+    # 片方だけ強化技なら攻撃を受ける
+    if player1[:skill][:speed] == 0
       player1, player2 = player2, player1
     end
 
@@ -85,12 +109,9 @@ class FightingGame
   def judge_skill_speed(fighting_params)
     order = fighting_params.each_slice(2).map do |p_idx, s_idx|
       player = @players[p_idx]
+      return if player.hp == 0
       skill = player.skills[s_idx]
-      if player.hp == 0
-        return
-      elsif skill[:speed] == 0
-        player.reinforce
-      end
+
       { player: player, skill: skill }
     end
     order.sort_by! { |fighting_info| fighting_info[:skill][:speed] }
@@ -106,17 +127,20 @@ def solve(input_data)
     skills = skill_params.each_slice(2).map do |speed, power|
       { speed: speed, power: power }
     end
-    Player.new(hp, skills)
+    [hp, skills]
   end
-  requests = input_data.shift(k).map do |request|
-    request.split.map { |params| params = params.to_i - 1 }
-  end
+  requests = input_data.shift(k).map { |request| request.split.map(&:to_i) }
 
+  # players をインスタンス化して上書き
+  players.map! { |hp, skills| Player.new(hp, skills) }
+
+  # request を渡してゲームを進める
   game = FightingGame.new(players)
-  requests.each do |params|
-    game.fighting(params)
+  requests.each do |request|
+    game.fighting(*request)
   end
 
+  # ゲーム終了時に hp が残っている player の人数を返す
   game.players.count { |player| player.hp > 0 }.to_s << "\n"
 end
 

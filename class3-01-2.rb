@@ -38,6 +38,15 @@ OUTPUT2 = <<~"EOS"
   kfkfkkkkkfo
 EOS
 
+class Point
+  attr_reader :alphabet, :routes
+
+  def initialize(alphabet, routes)
+    @alphabet = alphabet
+    @routes = routes
+  end
+end
+
 class Player
   attr_reader :magic_spell
 
@@ -46,9 +55,9 @@ class Player
     @magic_spell = start_point.alphabet
   end
 
-  # 次の point を返す
+  # 次の point のインデックスを返す
   def next_idx(direction)
-    @current_point.routes[direction]
+    @current_point.routes[direction - 1] - 1
   end
 
   # 移動した後の point を 現在地 @current_point にする
@@ -59,14 +68,38 @@ class Player
   end
 end
 
-class Point
-  attr_reader :alphabet, :routes
-
-  def initialize(alphabet, routes)
-    @alphabet = alphabet
-    @routes = routes
+def solve(input_lines)
+  # 入力データ受け取り
+  input_lines = input_lines.split("\n")
+  n, k, s = input_lines.shift.split.map(&:to_i)
+  points = input_lines.shift(n).map do |point|
+    alphabet, *routes = point.split
+    routes.map!(&:to_i)
+    [alphabet, routes]
   end
+  directions = input_lines.shift(k).map(&:to_i)
+
+  # Pointクラスでインスタンス化して上書き
+  points.map! { |alphabet, routes| Point.new(alphabet, routes) }
+
+  # Playerクラスでインスタンス化
+  player = Player.new(points[s - 1])
+
+  # directions に従って player を移動させる
+  directions.each do |direction|
+    # 次の point のインデックスを調べる
+    next_idx = player.next_idx(direction)
+    # 次の point に移動する
+    player.move(points[next_idx])
+  end
+
+  # player の magic_spell 末尾に改行を追加して返す
+  player.magic_spell << "\n"
 end
+
+puts solve(STDIN.read)
+
+exit
 
 def solve(input_lines)
   # 入力データ受け取り
@@ -75,20 +108,25 @@ def solve(input_lines)
   points = input_lines.shift(n).map do |point|
     alphabet, *routes = point.split
     routes.map!(&:to_i)
-    # Pointクラスでインスタンス化
-    Point.new(alphabet, routes)
+    [alphabet, routes]
   end
   directions = input_lines.shift(k).map(&:to_i)
+
+  # # Pointクラスでインスタンス化して上書き
+  points.map! { |alphabet, routes| Point.new(alphabet, routes) }
 
   # Playerクラスでインスタンス化
   player = Player.new(points[s - 1])
 
-  # playerを移動させる
+  # directions に従って player を移動させる
   directions.each do |direction|
-    next_idx = player.next_idx(direction - 1)
-    player.move(points[next_idx - 1])
+    # 次の point のインデックスを調べる
+    next_idx = player.next_idx(direction)
+    # 次の point に移動する
+    player.move(points[next_idx])
   end
-  # 移動後のmagic_spellに改行を加えて返す
+
+  # player の magic_spell に改行を加えて返す
   player.magic_spell << "\n"
 end
 
