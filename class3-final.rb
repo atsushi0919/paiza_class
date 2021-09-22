@@ -1,9 +1,41 @@
 # ロボットの暴走 (paizaランク A 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__robot_move
 
+INPUT1 = <<~"EOS"
+  5 5 3 3
+  0 0
+  0 1
+  0 2
+  0 3
+  0 4
+  1 0
+  1 1
+  1 2
+  1 3
+  1 4
+  2 1 1
+  2 2 1
+  2 3 1
+  1 W
+  1 E
+  3 S
+EOS
+OUTPUT1 = <<~"EOS"
+  3 1 2
+  2 2 1
+  2 4 1
+EOS
+
+INPUT2 = <<~"EOS"
+
+EOS
+OUTPUT2 = <<~"EOS"
+
+EOS
+
 class Robot
-  VX = { N: 0, S: 0, E: 1, W: -1 }
-  VY = { N: -1, S: 1, E: 0, W: 0 }
+  VX = { "N" => 0, "S" => 0, "E" => 1, "W" => -1 }
+  VY = { "N" => -1, "S" => 1, "E" => 0, "W" => 0 }
   MOBILITY = [1, 2, 5, 10]
 
   def initialize(x, y, lv)
@@ -30,86 +62,64 @@ class Robot
 end
 
 class Factory
-  attr_reader :robot_list
+  attr_reader :robots
 
-  def initialize(h, w, toolbox_list, robot_list)
+  def initialize(h, w, boxes, robots)
     @h = h
     @w = w
-    @toolbox_list = toolbox_list
-    @robot_list = robot_list
+    @boxes = boxes
+    @robots = robots
   end
 
-  def move_target_robot(robot_idx, direction)
-    robot = @robot_list[robot_idx]
+  def move_robot(robot_no, direction)
+    robot = @robots[robot_no]
     robot.move(direction)
 
-    if @toolbox_list.include?(robot.info[0..1])
+    if @boxes.include?(robot.info[0..1])
       robot.lvup
     end
   end
 end
 
-def solve(input_data)
+def solve(input_lines)
+  # 入力データ受け取り
   toolbox = 10
-  input_data = input_data.split("\n")
-  h, w, n, k = input_data.shift.split.map(&:to_i)
+  input_lines = input_lines.split("\n")
+  h, w, n, k = input_lines.shift.split.map(&:to_i)
 
-  toolbox_list = input_data.shift(TOOLBOX).map do |coordinate|
+  boxes = input_lines.shift(toolbox).map do |coordinate|
     coordinate.split.map(&:to_i)
   end
 
-  robot_list = input_data.shift(n).map do |robot_params|
+  robots = input_lines.shift(n).map do |robot_params|
     x, y, lv = robot_params.split.map(&:to_i)
-    Robot.new(x, y, lv)
   end
 
-  factory = Factory.new(h, w, toolbox_list, robot_list)
-  input_data.each do |operation_params|
-    robot_idx, direction = operation_params.split
-    direction = direction.to_sym
-    robot_idx = robot_idx.to_i - 1
-    factory.move_target_robot(robot_idx, direction)
+  requests = input_lines.shift(k).map do |request_params|
+    robot_no, direction = request_params.split
+    [robot_no.to_i, direction]
   end
-  factory.robot_list.map do |robot|
-    robot.info.join(" ")
+
+  # robots をインスタンス化して上書き
+  robots.map! { |x, y, lv| Robot.new(x, y, lv) }
+  # Factory クラスのインスタンス factory を生成
+  factory = Factory.new(h, w, boxes, robots)
+
+  # requests に従ってロボットを移動させる
+  requests.each do |robot_no, direction|
+    factory.move_robot(robot_no - 1, direction)
   end
+
+  # robots の先頭から順に infoメソッドを実行した結果の配列を result に格納
+  result = factory.robots.map { |robot| robot.info.join(" ") }
+  # 配列 result を改行で連結し末尾に改行を追加
+  result.join("\n") << "\n"
 end
 
 #puts solve(STDIN.read)
 
-in1 = <<~"EOS"
-  5 5 3 3
-  0 0
-  0 1
-  0 2
-  0 3
-  0 4
-  1 0
-  1 1
-  1 2
-  1 3
-  1 4
-  2 1 1
-  2 2 1
-  2 3 1
-  1 W
-  1 E
-  3 S
-EOS
-res1 = <<~"EOS"
-  3 1 2
-  2 2 1
-  2 4 1
-EOS
-
-in2 = <<~"EOS"
-
-EOS
-res2 = <<~"EOS"
-
-EOS
-
-puts solve(in1)
+p solve(INPUT1)
+p solve(INPUT1) == OUTPUT1
 
 =begin
 ロボットの暴走 (paizaランク A 相当)
