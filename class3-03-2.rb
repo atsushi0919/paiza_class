@@ -78,43 +78,69 @@ class FightingGame
   end
 
   def fighting(p_no1, s_no1, p_no2, s_no2)
-    # 戦うプレイヤーを選択
-    fight_players = [players[p_no1 - 1], players[p_no2 - 1]]
+    # プレイヤーとスキルを選択
+    player1 = @players[p_no1 - 1]
+    skill1 = player1.skills[s_no1 - 1]
+    player2 = @players[p_no2 - 1]
+    skill2 = player2.skills[s_no2 - 1]
 
-    # どちらかが倒れていれば何もしない
-    return if fight_players.any? { |player| player.hp == 0 }
+    # ターン終了の条件を満たしているなら何も起こらない
+    return if turn_end?(player1, skill1, player2, skill2)
 
-    # スピード順でソート
-    fight_players.sort_by! { |player| player.speed() }
-
-    # 強化技の処理
-    fighting_order.each { |player| player.reinforce if skill[:speed] == 0 }
-
-    # 攻撃技の処理
-    player1, player2 = fighting_order
-    # どちらも強化技なら何もしない
-    return if player1[:skill][:speed] == 0 && player2[:skill][:speed] == 0
-
-    # 片方だけ強化技なら攻撃を受ける
-    if player1[:skill][:speed] == 0
+    # スピード順で並び替える
+    if skill1[:speed] > skill2[:speed]
       player1, player2 = player2, player1
+      skill1, skill2 = skill2, skill1
     end
 
-    damage = player1[:skill][:power]
-    player2[:player].hp = [0, player2[:player].hp - damage].max
+    # ///// 確認用コード /////
+    puts "< fighting >"
+    p player1
+    puts "skill: #{skill1}"
+    p player2
+    puts "skill: #{skill2}"
+    puts
+    # ///////////////////////
+
+    # 戦闘の処理
+    if skill1[:power] > 0
+      # player1 が攻撃
+      calc_damage(player2, skill1)
+    else
+      # player1 が強化
+      player1.reinforce if skill1[:power] == 0
+      if skill2[:power] == 0
+        # player2 が強化
+        player2.reinforce
+      else
+        # player2 が攻撃
+        calc_damage(player1, skill2)
+      end
+    end
+
+    # ///// 確認用コード /////
+    puts "< result >"
+    p player1
+    p player2
+    puts "---------------------------------"
+    # ///////////////////////
+
   end
 
   private
 
-  def judge_skill_speed(fighting_params)
-    order = fighting_params.each_slice(2).map do |p_idx, s_idx|
-      player = @players[p_idx]
-      return if player.hp == 0
-      skill = player.skills[s_idx]
+  def turn_end?(player1, skill1, player2, skill2)
+    # どちらかが倒れていれば何もしない
+    return true if player1.hp == 0 || player2.hp == 0
+    # 両方攻撃技でspeedが同じなら何もしない
+    return true if skill1[:power] > 0 && skill2[:power] > 0 &&
+                   skill1[:speed] == skill2[:speed]
+    false
+  end
 
-      { player: player, skill: skill }
-    end
-    order.sort_by! { |fighting_info| fighting_info[:skill][:speed] }
+  def calc_damage(player, skill)
+    damage = skill[:power]
+    player.hp = [0, player.hp - damage].max
   end
 end
 
@@ -146,13 +172,15 @@ end
 
 #puts solve(STDIN.read)
 
+require "byebug"
+
 p solve(INPUT1)
 # > "2\n"
-p solve(INPUT1) == OUTPUT1
+#p solve(INPUT1) == OUTPUT1
 # > true
 p solve(INPUT2)
 # > "3\n"
-p solve(INPUT2) == OUTPUT2
+#p solve(INPUT2) == OUTPUT2
 # > true
 
 =begin
