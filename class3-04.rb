@@ -1,81 +1,7 @@
 # スーパースーパースーパーカー (paizaランク A 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__super_super_supercar
 
-class Supercar
-  attr_reader :mileage
-
-  def initialize(fuel, gas_mileage)
-    @fuel = fuel
-    @gas_mileage = gas_mileage
-    @mileage = 0
-  end
-
-  def run
-    return if @fuel == 0
-    @fuel -= 1
-    @mileage += @gas_mileage
-  end
-end
-
-class Supersupercar < Supercar
-  def fly
-    if @fuel < 5
-      run
-      return
-    end
-    @fuel -= 5
-    @mileage += @gas_mileage ** 2
-  end
-end
-
-class Supersupersupercar < Supersupercar
-  def fly
-    if @fuel < 5
-      run
-      return
-    end
-    @fuel -= 5
-    @mileage += 2 * @gas_mileage ** 2
-  end
-
-  def teleport
-    if @fuel < @gas_mileage ** 2
-      fly
-      return
-    end
-    @fuel -= @gas_mileage ** 2
-    @mileage += @gas_mileage ** 4
-  end
-end
-
-def solve(input_data)
-  input_data = input_data.split("\n")
-  n, k = input_data.shift.split.map(&:to_i)
-
-  car_list = input_data.shift(n).map do |car_params|
-    car_type, *params = car_params.split
-    params.map!(&:to_i)
-    case car_type
-    when "supercar"
-      Supercar.new(*params)
-    when "supersupercar"
-      Supersupercar.new(*params)
-    when "supersupersupercar"
-      Supersupersupercar.new(*params)
-    end
-  end
-
-  input_data.each do |drive_params|
-    car_idx, method = drive_params.split
-    car_idx = car_idx.to_i - 1
-    car_list[car_idx].public_send(method)
-  end
-  car_list.map { |car| car.mileage }
-end
-
-#puts solve(STDIN.read)
-
-in1 = <<~"EOS"
+INPUT1 = <<~"EOS"
   3 6
   supercar 1 1
   supersupercar 10 10
@@ -87,13 +13,13 @@ in1 = <<~"EOS"
   3 fly
   3 teleport
 EOS
-res1 = <<~"EOS"
+OUTPUT1 = <<~"EOS"
   1
   110
   680
 EOS
 
-in2 = <<~"EOS"
+INPUT2 = <<~"EOS"
   5 10
   supersupercar 1102 67
   supersupercar 63296 25
@@ -111,7 +37,7 @@ in2 = <<~"EOS"
   4 run
   1 fly
 EOS
-res2 = <<~"EOS"
+OUTPUT2 = <<~"EOS"
   8978
   675
   1048576
@@ -119,7 +45,130 @@ res2 = <<~"EOS"
   6162
 EOS
 
-puts solve(in2)
+class SuperCar
+  attr_reader :mileage
+
+  def initialize(fuel, gas_mileage)
+    @fuel = fuel
+    @gas_mileage = gas_mileage
+    @mileage = 0
+  end
+
+  def run
+    return if @fuel == 0
+    @fuel -= 1
+    @mileage += @gas_mileage
+  end
+end
+
+class SuperSuperCar < SuperCar
+  def fly
+    if @fuel < 5
+      return run
+    end
+    @fuel -= 5
+    @mileage += @gas_mileage ** 2
+  end
+end
+
+class SuperSuperSuperCar < SuperSuperCar
+  def fly
+    if @fuel < 5
+      return run
+    end
+    @fuel -= 5
+    @mileage += 2 * @gas_mileage ** 2
+  end
+
+  def teleport
+    if @fuel < @gas_mileage ** 2
+      return fly
+    end
+    @fuel -= @gas_mileage ** 2
+    @mileage += @gas_mileage ** 4
+  end
+end
+
+def solve(input_lines)
+  # 入力データ受け取り
+  input_lines = input_lines.split("\n")
+  n, k = input_lines.shift.split.map(&:to_i)
+  cars = input_lines.shift(n).map do |car_params|
+    car_type, *params = car_params.split
+    params.map!(&:to_i)
+    [car_type, *params]
+  end
+  requests = input_lines.shift(k).map do |drive_params|
+    car_no, drive_type = drive_params.split
+    [car_no.to_i, drive_type]
+  end
+
+  # cars をインスタンス化して上書き
+  cars.map! do |car_type, fuel, gas_mileage|
+    case car_type
+    when "supercar"
+      SuperCar.new(fuel, gas_mileage)
+    when "supersupercar"
+      SuperSuperCar.new(fuel, gas_mileage)
+    when "supersupersupercar"
+      SuperSuperSuperCar.new(fuel, gas_mileage)
+    end
+  end
+
+  # requests に従って cars を進める
+  requests.each do |car_no, drive_type|
+    cars[car_no - 1].public_send(drive_type)
+  end
+
+  # cars の 各要素の mileage を配列 result に格納する
+  result = cars.map { |car| car.mileage }
+
+  # 要素を改行で連結し末尾に改行を加える
+  result.join("\n") << "\n"
+end
+
+puts solve(STDIN.read)
+
+exit
+
+=begin
+def solve(input_lines)
+  p input_lines
+  # 入力データ受け取り
+  input_lines = input_lines.split("\n")
+  n, k = input_lines.shift.split.map(&:to_i)
+  cars = input_lines.shift(n).map do |car_params|
+    car_type, *params = car_params.split
+    params.map!(&:to_i)
+    [car_type, *params]
+  end
+  requests = input_lines.shift(k) do |drive_params|
+    car_no, drive_type = drive_params.split
+    [car_no.to_i, drive_type]
+  end
+
+  # cars をインスタンス化して上書き
+  cars.map! do |car_type, fuel, gas_mileage|
+    case car_type
+    when "supercar"
+      SuperCar.new(fuel, gas_mileage)
+    when "supersupercar"
+      SuperSuperCar.new(fuel, gas_mileage)
+    when "supersupersupercar"
+      SuperSuperSuperCar.new(fuel, gas_mileage)
+    end
+  end
+
+  # requests に従って cars を進める
+  requests.each do |car_no, drive_type|
+    cars[car_no - 1].public_send(drive_type)
+  end
+
+  cars.map { |car| car.mirage }
+end
+
+#puts solve(STDIN.read)
+=end
 
 =begin
 スーパースーパースーパーカー (paizaランク A 相当)
