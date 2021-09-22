@@ -1,89 +1,7 @@
 # 格闘ゲーム (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__fighting_games
 
-class Player
-  attr_accessor :hp, :skills
-
-  def initialize(hp, skills)
-    @hp = hp
-    @skills = skills
-  end
-
-  def reinforce
-    @skills.each do |skill|
-      if skill[:speed] > 0
-        skill[:speed] = [1, skill[:speed] - 3].max
-        skill[:power] += 5
-      end
-    end
-  end
-end
-
-class FightingGame
-  attr_reader :player_list
-
-  def initialize(player_list)
-    @player_list = player_list
-  end
-
-  def fighting(fighting_params)
-    fighting_order = judge_skill_speed(fighting_params)
-    return if fighting_order.nil?
-
-    player1, player2 = fighting_order
-    # 強化技使用
-    if player1[:skill][:speed] == 0 && player2[:skill][:speed] == 0
-      return
-    elsif player1[:skill][:speed] == 0
-      player1, player2 = player2, player1
-    end
-
-    damage = player1[:skill][:power]
-    player2[:player].hp = [0, player2[:player].hp - damage].max
-  end
-
-  private
-
-  def judge_skill_speed(fighting_params)
-    order = fighting_params.each_slice(2).map do |p_idx, s_idx|
-      player = @player_list[p_idx]
-      skill = player.skills[s_idx]
-      if player.hp == 0
-        return
-      elsif skill[:speed] == 0
-        player.reinforce
-      end
-      { player: player, skill: skill }
-    end
-    order.sort_by! { |fighting_info| fighting_info[:skill][:speed] }
-  end
-end
-
-def solve(input_data)
-  input_data = input_data.split("\n")
-  n, k = input_data.shift.split.map(&:to_i)
-
-  player_list = input_data.shift(n).map do |player_params|
-    hp, *skill_params = player_params.split.map(&:to_i)
-    skills = skill_params.each_slice(2).map do |speed, power|
-      { speed: speed, power: power }
-    end
-    Player.new(hp, skills)
-  end
-
-  game = FightingGame.new(player_list)
-  input_data.each do |fighting_params|
-    fighting_params = fighting_params.split.map do |param|
-      param = param.to_i - 1
-    end
-    game.fighting(fighting_params)
-  end
-  game.player_list.count { |player| player.hp > 0 }
-end
-
-#puts solve(STDIN.read)
-
-in1 = <<~"EOS"
+INPUT1 = <<~"EOS"
   3 6
   10 1 1 2 2 3 3
   10 0 0 6 1 7 2
@@ -95,9 +13,11 @@ in1 = <<~"EOS"
   2 3 3 1
   1 2 3 2
 EOS
-res1 = 2
+OUTPUT1 = <<~"EOS"
+  2
+EOS
 
-in2 = <<~"EOS"
+INPUT2 = <<~"EOS"
   5 10
   8 2 24 40 25 42 26
   59 48 13 21 13 56 2
@@ -115,9 +35,189 @@ in2 = <<~"EOS"
   4 1 5 3
   2 3 3 2
 EOS
-res2 = 3
+OUTPUT2 = <<~"EOS"
+  3
+EOS
 
-puts solve(in1)
+class Player
+  attr_reader :hp, :skills
+
+  def initialize(hp, skills)
+    @hp = hp
+    @skills = skills
+  end
+
+  def reinforce
+    @skills.each do |skill|
+      if skill[:speed] > 0
+        skill[:speed] = [1, skill[:speed] - 3].max
+        skill[:power] += 5
+      end
+    end
+  end
+
+  def take_damage(damage)
+    @hp = [0, @hp - damage].max
+  end
+end
+
+class FightingGame
+  attr_reader :players
+
+  def initialize(players)
+    @players = players
+  end
+
+  def fighting(p_no1, s_no1, p_no2, s_no2)
+    # プレイヤーとスキルを選択
+    player1 = @players[p_no1 - 1]
+    skill1 = player1.skills[s_no1 - 1]
+    player2 = @players[p_no2 - 1]
+    skill2 = player2.skills[s_no2 - 1]
+
+    # ターンスキップの条件を満たしているなら何もせず終了
+    if turn_end?(player1, skill1, player2, skill2)
+      # 確認用コード
+      # puts "スキップ"
+      # puts "---------------------------------"
+      return
+    end
+
+    # スピード順で並び替える
+    if skill1[:speed] > skill2[:speed]
+      player1, player2 = player2, player1
+      skill1, skill2 = skill2, skill1
+    end
+
+    # ///// 確認用コード /////
+    # puts <<~"EOS"
+    #        < order >
+    #        player#{p_no1}, skill_no: #{s_no1}
+    #        player#{p_no2}, skill_no: #{s_no2}
+
+    #        < fighting >
+    #        player#{p_no1} hp:#{@players[p_no1 - 1].hp}
+    #        skills: #{@players[p_no1 - 1].skills}
+    #        skill_params: #{@players[p_no1 - 1].skills[s_no1 - 1]}
+
+    #        player#{p_no2} hp:#{@players[p_no2 - 1].hp}
+    #        skills: #{@players[p_no2 - 1].skills}
+    #        skill_params: #{@players[p_no2 - 1].skills[s_no2 - 1]}
+
+    #      EOS
+    # ///////////////////////
+
+    # 戦闘の処理
+    if skill1[:power] > 0
+      # player1 が攻撃
+      player2.take_damage(skill1[:power])
+    else
+      # player1 が強化
+      player1.reinforce if skill1[:power] == 0
+      if skill2[:power] == 0
+        # player2 が強化
+        player2.reinforce
+      else
+        # player2 が攻撃
+        player1.take_damage(skill2[:power])
+      end
+    end
+
+    # ///// 確認用コード /////
+    # puts <<~"EOS"
+    #        < result >
+    #        player#{p_no1} hp:#{@players[p_no1 - 1].hp}
+    #        skills: #{@players[p_no1 - 1].skills}
+
+    #        player#{p_no2} hp:#{@players[p_no2 - 1].hp}
+    #        skills: #{@players[p_no2 - 1].skills}
+    #        ---------------------------------
+    #      EOS
+    # ///////////////////////
+  end
+
+  private
+
+  # ターンスキップの判定
+  def turn_end?(player1, skill1, player2, skill2)
+    # どちらかが倒れていれば何もしない
+    return true if player1.hp == 0 || player2.hp == 0
+
+    # 両方攻撃技でspeedが同じなら何もしない
+    return true if skill1[:power] > 0 && skill2[:power] > 0 &&
+                   skill1[:speed] == skill2[:speed]
+    false
+  end
+end
+
+def solve(input_data)
+  # 入力データ受け取り
+  input_data = input_data.split("\n")
+  n, k = input_data.shift.split.map(&:to_i)
+  players = input_data.shift(n).map do |player_params|
+    hp, *skill_params = player_params.split.map(&:to_i)
+    skills = skill_params.each_slice(2).map do |speed, power|
+      { speed: speed, power: power }
+    end
+    [hp, skills]
+  end
+  requests = input_data.shift(k).map { |request| request.split.map(&:to_i) }
+
+  # players をインスタンス化して上書き
+  players.map! { |hp, skills| Player.new(hp, skills) }
+
+  # playersを渡してFightingGameクラスでインスタンス game を生成
+  game = FightingGame.new(players)
+  # game に request を渡してゲームを進める
+  requests.each do |request|
+    game.fighting(*request)
+  end
+
+  # ゲーム終了時に hp が残っている player の人数を文字列に変換して末尾に改行を追加
+  game.players.count { |player| player.hp > 0 }.to_s << "\n"
+end
+
+puts solve(STDIN.read)
+
+exit
+
+def solve(input_data)
+  # 入力データ受け取り
+  input_data = input_data.split("\n")
+  n, k = input_data.shift.split.map(&:to_i)
+  players = input_data.shift(n).map do |player_params|
+    hp, *skill_params = player_params.split.map(&:to_i)
+    skills = skill_params.each_slice(2).map do |speed, power|
+      { speed: speed, power: power }
+    end
+    [hp, skills]
+  end
+  requests = input_data.shift(k).map { |request| request.split.map(&:to_i) }
+
+  # players をインスタンス化して上書き
+  players.map! { |hp, skills| Player.new(hp, skills) }
+
+  # playersを渡してFightingGameクラスでインスタンス game を生成
+  game = FightingGame.new(players)
+  # game に request を渡してゲームを進める
+  requests.each do |request|
+    game.fighting(*request)
+  end
+
+  # ゲーム終了時に hp が残っている player の人数を返す
+  game.players.count { |player| player.hp > 0 }
+end
+
+#puts solve(STDIN.read)
+
+p solve(INPUT1)
+# > "2\n"
+#p solve(INPUT1) == OUTPUT1
+# > true
+p solve(INPUT2)
+# > "3\n"
+#p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 格闘ゲーム (paizaランク B 相当)
@@ -126,7 +226,7 @@ puts solve(in1)
 シェア用URL:
 https://paiza.jp/works/mondai/class_primer/class_primer__fighting_game
 問題文のURLをコピーする
-Img 04 03 下記の問題をプログラミングしてみよう！
+
 友達の家で N 人で遊んでいる paiza 君は格闘ゲームを遊ぶことにしました。
 格闘ゲームのルールは次の通りです。
 

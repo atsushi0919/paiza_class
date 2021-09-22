@@ -1,70 +1,7 @@
 # 出口のない迷路 (paizaランク B 相当)
 # https://paiza.jp/works/mondai/class_primer/class_primer__closed_maze
 
-class Player
-  attr_reader :current_point, :magic_spell
-
-  def initialize(start_point:)
-    @current_point = start_point
-    @magic_spell = start_point.alphabet
-  end
-
-  def next_index(direction)
-    @current_point.route[direction]
-  end
-
-  def move_forward(next_point)
-    @current_point = next_point
-    @magic_spell += @current_point.alphabet
-  end
-end
-
-class Point
-  attr_reader :alphabet, :route
-
-  def initialize(alphabet:, route:)
-    @alphabet = alphabet
-    @route = route
-  end
-end
-
-class Maze
-  attr_reader :point_list, :player
-
-  def initialize(point_list:, player:)
-    @point_list = point_list
-    @player = player
-  end
-
-  def forward_player(direction)
-    next_point = @point_list[@player.next_index(direction) - 1]
-    @player.move_forward(next_point)
-  end
-end
-
-def solve(input_data)
-  input_data = input_data.split("\n")
-  n, k, s = input_data.shift.split.map(&:to_i)
-
-  point_list = input_data.shift(n).map do |point|
-    alphabet, *route = point.split
-    route = route.map(&:to_i)
-    Point.new(alphabet: alphabet, route: route)
-  end
-
-  player = Player.new(start_point: point_list[s - 1])
-  maze = Maze.new(point_list: point_list, player: player)
-
-  input_data.each do |direction|
-    direction = direction.to_i - 1
-    maze.forward_player(direction)
-  end
-  maze.player.magic_spell
-end
-
-#puts solve(STDIN.read)
-
-in1 = <<~"EOS"
+INPUT1 = <<~"EOS"
   4 4 1
   p 2 4
   a 3 1
@@ -75,9 +12,11 @@ in1 = <<~"EOS"
   1
   2
 EOS
-res1 = "paiza"
+OUTPUT1 = <<~"EOS"
+  paiza
+EOS
 
-in2 = <<~"EOS"
+INPUT2 = <<~"EOS"
   5 10 5
   o 5 4
   f 1 5
@@ -95,8 +34,112 @@ in2 = <<~"EOS"
   1
   1
 EOS
-res2 = "kfkfkkkkkfo"
-puts solve(in1)
+OUTPUT2 = <<~"EOS"
+  kfkfkkkkkfo
+EOS
+
+class Point
+  attr_reader :alphabet, :routes
+
+  def initialize(alphabet, routes)
+    @alphabet = alphabet
+    @routes = routes
+  end
+end
+
+class Player
+  attr_reader :magic_spell
+
+  def initialize(start_point)
+    @current_point = start_point
+    @magic_spell = start_point.alphabet
+  end
+
+  # 次の point のインデックスを返す
+  def next_idx(direction)
+    @current_point.routes[direction - 1] - 1
+  end
+
+  # 移動した後の point を 現在地 @current_point にする
+  # @current_point の alphabet を @magic_spell に追加する
+  def move(next_point)
+    @current_point = next_point
+    @magic_spell += @current_point.alphabet
+  end
+end
+
+def solve(input_lines)
+  # 入力データ受け取り
+  input_lines = input_lines.split("\n")
+  n, k, s = input_lines.shift.split.map(&:to_i)
+  points = input_lines.shift(n).map do |point|
+    alphabet, *routes = point.split
+    routes.map!(&:to_i)
+    [alphabet, routes]
+  end
+  directions = input_lines.shift(k).map(&:to_i)
+
+  # Pointクラスでインスタンス化して上書き
+  points.map! { |alphabet, routes| Point.new(alphabet, routes) }
+
+  # Playerクラスでインスタンス化
+  player = Player.new(points[s - 1])
+
+  # directions に従って player を移動させる
+  directions.each do |direction|
+    # 次の point のインデックスを調べる
+    next_idx = player.next_idx(direction)
+    # 次の point に移動する
+    player.move(points[next_idx])
+  end
+
+  # player の magic_spell 末尾に改行を追加して返す
+  player.magic_spell << "\n"
+end
+
+puts solve(STDIN.read)
+
+exit
+
+def solve(input_lines)
+  # 入力データ受け取り
+  input_lines = input_lines.split("\n")
+  n, k, s = input_lines.shift.split.map(&:to_i)
+  points = input_lines.shift(n).map do |point|
+    alphabet, *routes = point.split
+    routes.map!(&:to_i)
+    [alphabet, routes]
+  end
+  directions = input_lines.shift(k).map(&:to_i)
+
+  # # Pointクラスでインスタンス化して上書き
+  points.map! { |alphabet, routes| Point.new(alphabet, routes) }
+
+  # Playerクラスでインスタンス化
+  player = Player.new(points[s - 1])
+
+  # directions に従って player を移動させる
+  directions.each do |direction|
+    # 次の point のインデックスを調べる
+    next_idx = player.next_idx(direction)
+    # 次の point に移動する
+    player.move(points[next_idx])
+  end
+
+  # player の magic_spell に改行を加えて返す
+  player.magic_spell << "\n"
+end
+
+puts solve(STDIN.read)
+
+# p solve(INPUT1)
+# > "paiza\n"
+# p solve(INPUT1) == OUTPUT1
+# > true
+# p solve(INPUT2)
+# > "kfkfkkkkkfo\n"
+# p solve(INPUT2) == OUTPUT2
+# > true
 
 =begin
 出口のない迷路 (paizaランク B 相当)
