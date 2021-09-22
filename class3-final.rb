@@ -26,13 +26,6 @@ OUTPUT1 = <<~"EOS"
   2 4 1
 EOS
 
-INPUT2 = <<~"EOS"
-
-EOS
-OUTPUT2 = <<~"EOS"
-
-EOS
-
 class Robot
   VX = { "N" => 0, "S" => 0, "E" => 1, "W" => -1 }
   VY = { "N" => -1, "S" => 1, "E" => 0, "W" => 0 }
@@ -86,15 +79,12 @@ def solve(input_lines)
   toolbox = 10
   input_lines = input_lines.split("\n")
   h, w, n, k = input_lines.shift.split.map(&:to_i)
-
   boxes = input_lines.shift(toolbox).map do |coordinate|
     coordinate.split.map(&:to_i)
   end
-
   robots = input_lines.shift(n).map do |robot_params|
     x, y, lv = robot_params.split.map(&:to_i)
   end
-
   requests = input_lines.shift(k).map do |request_params|
     robot_no, direction = request_params.split
     [robot_no.to_i, direction]
