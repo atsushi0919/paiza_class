@@ -57,15 +57,13 @@ end
 class Factory
   attr_reader :robots
 
-  def initialize(h, w, boxes, robots)
-    @h = h
-    @w = w
+  def initialize(boxes, robots)
     @boxes = boxes
     @robots = robots
   end
 
   def move_robot(robot_no, direction)
-    robot = @robots[robot_no]
+    robot = @robots[robot_no - 1]
     robot.move(direction)
 
     if @boxes.include?(robot.info[0..1])
@@ -93,7 +91,44 @@ def solve(input_lines)
   # robots をインスタンス化して上書き
   robots.map! { |x, y, lv| Robot.new(x, y, lv) }
   # Factory クラスのインスタンス factory を生成
-  factory = Factory.new(h, w, boxes, robots)
+  factory = Factory.new(boxes, robots)
+
+  # requests に従ってロボットを移動させる
+  requests.each do |robot_no, direction|
+    factory.move_robot(robot_no, direction)
+  end
+
+  # factory.robots の先頭から順に infoメソッドを実行した結果の配列を result に格納
+  result = factory.robots.map { |robot| robot.info }
+
+  # ロボットの情報を半角スペースで連結したものを改行で連結して末尾に改行を追加
+  result.map { |robot_params| robot_params.join(" ") }.join("\n") << "\n"
+end
+
+puts solve(STDIN.read)
+
+exit
+
+def solve(input_lines)
+  # 入力データ受け取り
+  toolbox = 10
+  input_lines = input_lines.split("\n")
+  h, w, n, k = input_lines.shift.split.map(&:to_i)
+  boxes = input_lines.shift(toolbox).map do |coordinate|
+    coordinate.split.map(&:to_i)
+  end
+  robots = input_lines.shift(n).map do |robot_params|
+    x, y, lv = robot_params.split.map(&:to_i)
+  end
+  requests = input_lines.shift(k).map do |request_params|
+    robot_no, direction = request_params.split
+    [robot_no.to_i, direction]
+  end
+
+  # robots をインスタンス化して上書き
+  robots.map! { |x, y, lv| Robot.new(x, y, lv) }
+  # Factory クラスのインスタンス factory を生成
+  factory = Factory.new(boxes, robots)
 
   # requests に従ってロボットを移動させる
   requests.each do |robot_no, direction|
