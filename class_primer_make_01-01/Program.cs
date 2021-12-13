@@ -4,7 +4,7 @@ namespace class_primer_make_01_01
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             int N = int.Parse(Console.ReadLine());
 
