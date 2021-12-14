@@ -11,11 +11,11 @@ namespace class_primer_sort_01_03
             List<User> users = new List<User>();
             for (int i = 0; i < N; i++)
             {
-                string line = Console.ReadLine();
-                string nickname = line.Split(' ')[0];
-                int old = int.Parse(line.Split(' ')[1]);
-                string birth = line.Split(' ')[2];
-                string state = line.Split(' ')[3];
+                string[] input = Console.ReadLine().Split(' ');
+                string nickname = input[0];
+                int old = int.Parse(input[1]);
+                string birth = input[2];
+                string state = input[3];
                 users.Add(new User(nickname, old, birth, state));
             }
 
