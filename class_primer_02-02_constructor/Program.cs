@@ -33,8 +33,8 @@ namespace class_primer_02_02_constructor
 
         public class Employee
         {
-            private string name;
-            private int number;
+            private readonly string name;
+            private readonly int number;
 
             public Employee(string name, int number)
             {
