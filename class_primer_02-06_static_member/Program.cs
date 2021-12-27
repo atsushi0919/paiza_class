@@ -95,7 +95,7 @@ namespace class_primer_02_06_static_member
 
         public virtual void OrderAlcohol(int price = 500)
         {
-            Console.WriteLine("お酒は20歳になってから");
+            // Console.WriteLine("お酒は20歳になってから");
         }
     }
 
