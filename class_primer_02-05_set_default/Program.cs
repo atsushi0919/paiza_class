@@ -87,7 +87,7 @@ namespace class_primer_02_05_set_default
             payment += price;
         }
 
-        public virtual void OrderAlcohol(int price = 0)
+        public virtual void OrderAlcohol(int price = 500)
         {
             // Console.WriteLine("お酒は20歳になってから");
         }
@@ -107,7 +107,7 @@ namespace class_primer_02_05_set_default
             payment += discount ? price - 200 : price;
         }
 
-        public override void OrderAlcohol(int price = 500)
+        public override void OrderAlcohol(int price)
         {
             payment += price;
             if (!discount)
