@@ -51,7 +51,7 @@ namespace class_primer_03_01_closed_maze
     class Player
     {
         private Point currentPoint;
-        private List<string> spells;
+        private readonly List<string> spells;
 
         public Player()
         {
