@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace class_primer_03_03_fighting_game
 {
@@ -6,8 +7,22 @@ namespace class_primer_03_03_fighting_game
     {
         private const int SkillCount = 3;
         public int hp { get; private set; }
-        public int[] f { get; private set; }
-        public int[] a { get; private set; }
+        private int[] frames;
+        public IReadOnlyList<int> f
+        {
+            get
+            {
+                return frames;
+            }
+        }
+        private int[] attacks;
+        public IReadOnlyList<int> a
+        {
+            get
+            {
+                return attacks;
+            }
+        }
 
         public Player(int hp,
                       int f1, int a1,
@@ -15,18 +30,18 @@ namespace class_primer_03_03_fighting_game
                       int f3, int a3)
         {
             this.hp = hp;
-            f = new int[SkillCount] { f1, f2, f3 };
-            a = new int[SkillCount] { a1, a2, a3 };
+            frames = new int[SkillCount] { f1, f2, f3 };
+            attacks = new int[SkillCount] { a1, a2, a3 };
         }
 
         public void Reinforce()
         {
             for (int i = 0; i < SkillCount; i++)
             {
-                if (f[i] > 0)
+                if (frames[i] > 0)
                 {
-                    f[i] = Math.Max(1, f[i] - 3);
-                    a[i] += 5;
+                    frames[i] = Math.Max(1, f[i] - 3);
+                    attacks[i] += 5;
                 }
             }
         }
@@ -100,7 +115,6 @@ namespace class_primer_03_03_fighting_game
                     // p2 攻撃
                     p1.TakeDamage(a2);
                 }
-
             }
         }
 
